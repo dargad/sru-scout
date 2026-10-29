@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ title }}</title>
+<style>
+  body { font: 14px/1.45 system-ui, sans-serif; margin: 2rem auto; max-width: 1200px; color: #222; padding: 0 1rem; }
+  h1 { margin-bottom: .2rem; }
+  .meta { color: #666; margin-bottom: 1rem; }
+  .filters button { border: 1px solid #ccc; background: #fff; padding: .3rem .7rem; border-radius: 4px; cursor: pointer; margin-right: .3rem; }
+  .filters button.active { background: #222; color: #fff; }
+  .card { border: 1px solid #ddd; border-left-width: 6px; border-radius: 4px; margin: .7rem 0; background: #fff; }
+  .card.blocked { border-left-color: #c0392b; } .card.attention { border-left-color: #e6a100; }
+  .card.review { border-left-color: #2980b9; } .card.ready { border-left-color: #27ae60; } .card.done { border-left-color: #aaa; }
+  summary { padding: .6rem .8rem; cursor: pointer; display: flex; gap: .8rem; align-items: baseline; flex-wrap: wrap; }
+  .badge { font-size: 11px; font-weight: 700; padding: .1rem .5rem; border-radius: 10px; color: #fff; text-transform: uppercase; }
+  .badge.blocked { background: #c0392b; } .badge.attention { background: #e6a100; } .badge.review { background: #2980b9; }
+  .badge.ready { background: #27ae60; } .badge.done { background: #888; }
+  .body { padding: 0 1rem 1rem; }
+  .lp { flex-basis: 100%; color: #444; }
+  .reasons { margin: .2rem 0 .8rem; }
+  table { border-collapse: collapse; margin: .4rem 0 1rem; width: 100%; }
+  th, td { text-align: left; border-bottom: 1px solid #eee; padding: .25rem .5rem; vertical-align: top; }
+  .sev-error { color: #c0392b; font-weight: 600; } .sev-warning { color: #b9770e; } .sev-info { color: #666; }
+  .fixed { color: #27ae60; } .pending { color: #b9770e; font-weight: 600; } .muted { color: #888; }
+  code { background: #f4f4f4; padding: 0 .25rem; border-radius: 3px; }
+</style>
+</head>
+<body>
+{% macro link(url, text) -%}
+  {%- if url and url.startswith('https://') %}<a href="{{ url }}">{{ text }}</a>{% else %}{{ text }}{% endif -%}
+{%- endmacro %}
+<h1>{{ title }}</h1>
+<div class="meta">Generated {{ generated }} &middot; {{ reviews|length }} card(s)</div>
+<div class="filters">
+  <button class="active" data-level="all">All</button>
+  {% for level in levels %}<button data-level="{{ level }}">{{ level|capitalize }} ({{ counts[level] }})</button>{% endfor %}
+</div>
+
+{% for r in reviews %}
+<details class="card {{ r.level }}" data-level="{{ r.level }}" {% if r.level in ('blocked', 'attention') %}open{% endif %}>
+  <summary>
+    <span class="badge {{ r.level }}">{{ r.level }}</span>
+    <strong>{{ link(r.url, r.key) }}</strong>
+    <span>{{ r.summary }}</span>
+    <span class="muted">{{ r.status }}{% if r.assignee %} &middot; {{ r.assignee }}{% endif %}</span>
+    {% for bug in r.bugs %}
+    <span class="lp">{{ link(bug.url, bug.label) }} <code>{{ bug.package or '?' }}</code> {{ bug.short_title(80) if bug.title else '' }}</span>
+    {% endfor %}
+  </summary>
+  <div class="body">
+    <ul class="reasons">{% for reason in r.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+    {% for bug in r.bugs %}
+    <h3>{{ link(bug.url, bug.label) }} {{ bug.title }}
+      {% if bug.package %}<small class="muted">({{ bug.package }})</small>{% endif %}</h3>
+    {% if bug.error %}<p class="sev-error">{{ bug.error }}</p>{% endif %}
+    {% if bug.series %}
+    <table>
+      <tr><th>Series</th><th>Status</th><th>Importance</th><th>Assignee</th></tr>
+      {% for s in bug.series %}
+      <tr><td>{{ link(s.url, s.series) }}</td>
+          <td class="{{ 'fixed' if s.fixed else 'muted' if (s.closed or s.eol) else 'pending' }}">{{ s.status }}{% if s.eol %} (EOL){% endif %}</td>
+          <td>{{ s.importance }}</td><td>{{ s.assignee }}</td></tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+
+    {% if bug.pending %}
+    <h4>In -proposed (<a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html">pending-sru report</a>)</h4>
+    <table>
+      <tr><th>Series</th><th>Package</th><th>Version</th><th>Days</th><th>Uploader</th><th>State</th><th>Builds not OK</th></tr>
+      {% for p in bug.pending %}
+      <tr><td>{{ p.series }}</td><td>{{ p.package }}</td><td>{{ p.version }}</td><td>{{ p.days if p.days is not none else '' }}</td>
+          <td>{{ p.uploader }}</td>
+          <td>{% for f in p.flags %}<code class="{{ 'sev-error' if f in ('verification-failed', 'block-proposed') else 'sev-warning' if f in ('incomplete', 'removal-candidate') else '' }}">{{ f }}</code> {% else %}<span class="muted">awaiting verification</span>{% endfor %}</td>
+          <td class="sev-warning">{{ p.builds_not_ok|join(', ') }}</td></tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+
+    {% if bug.blockers %}
+    <h4>Blockers and concerns</h4>
+    <ul>
+      {% for b in bug.blockers %}
+      <li><span class="{{ 'sev-error' if b.severity == 'blocker' else 'sev-warning' }}">{{ b.severity }}</span>
+        {{ link(b.url, b.summary) }}{% if b.maybe_resolved %} <span class="muted">(possibly resolved later)</span>{% endif %}
+        <span class="muted">[{{ b.source }}]</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% for kind, artifacts in (('Patches', bug.patches), ('Merge proposals', bug.merge_proposals)) %}
+    {% if artifacts %}<h4>{{ kind }}</h4>
+    {% for a in artifacts %}
+      <div>
+        {{ link(a.web_url, a.title if a.title is defined else a.web_url) }}
+        {% if a.series is string %}{% if a.series %}<code>{{ a.series }}</code>{% endif %}
+        {% else %}{% for s in a.series %}<code>{{ s }}</code> {% endfor %}{% endif %}
+        {% if a.status is defined %}<span class="muted">{{ a.status }}{% if a.votes %} &middot; {{ a.votes|join(', ') }}{% endif %}</span>{% endif %}
+        {% if a.lint is none %}<span class="muted">not linted</span>
+        {% elif not a.lint.ran %}<span class="sev-error">sru-lint failed: {{ a.lint.error }}</span>
+        {% elif not a.lint.findings %}<span class="fixed">sru-lint: clean</span>
+        {% else %}
+        <table>
+          {% for f in a.lint.findings %}
+          <tr><td class="sev-{{ f.severity }}">{{ f.severity }}</td><td>{{ f.rule_id }}</td>
+              <td>{{ link(f.doc_url, f.message) }}</td><td class="muted">{{ f.path }}{% if f.line %}:{{ f.line }}{% endif %}</td></tr>
+          {% endfor %}
+        </table>
+        {% endif %}
+      </div>
+    {% endfor %}{% endif %}
+    {% endfor %}
+    {% endfor %}
+  </div>
+</details>
+{% endfor %}
+
+<script>
+document.querySelectorAll('.filters button').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.filters button').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.card').forEach(function (card) {
+      card.style.display = (btn.dataset.level === 'all' || card.dataset.level === btn.dataset.level) ? '' : 'none';
+    });
+  });
+});
+</script>
+</body>
+</html>
