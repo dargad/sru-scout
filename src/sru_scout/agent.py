@@ -8,7 +8,7 @@ from typing import Callable, Iterable
 
 from sru_scout import blockers
 from sru_scout.jira import JiraIssue
-from sru_scout.launchpad import LaunchpadClient, LaunchpadError
+from sru_scout.launchpad import LaunchpadClient, LaunchpadError, annotate_series
 from sru_scout.lint import SruLint
 from sru_scout.llm import LLMAnalyzer
 from sru_scout.models import BugReview, IssueReview
@@ -55,10 +55,7 @@ class SruAgent:
         review.tags = bug.get("tags", [])
         review.has_sru_template = blockers.has_sru_template(bug.get("description") or "")
         review.package, review.series = self.lp.series_statuses(bug)
-
-        active = {s.name for s in self.lp.ubuntu_series() if s.active}
-        for status in review.series:
-            status.eol = status.series != "devel" and status.series not in active
+        annotate_series(review.series, self.lp.ubuntu_series())
 
         # Releases whose fix is in -proposed are already uploaded; patches matter only for the rest.
         review.pending = self.pending.for_bug(review.bug_id) if self.pending else []

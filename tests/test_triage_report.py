@@ -162,5 +162,22 @@ def test_html_overview_and_details():
     html = render_html([issue, finished])
     assert "Where to look" in html and 'id="card-SI-1"' in html
     assert 'badge lvl engineer-attention">Engineer<' in html and '<span class="l">Sponsor</span>' in html
+    assert 'title="noble: In Progress">N</span>' in html
     assert 'id="card-SI-2"' not in html and "Done (1)" in html
     assert html.index("error") < html.index("info</span>")
+
+
+def test_release_chips_newest_first_and_coloured_by_status():
+    from sru_scout.report_html import release_chips
+
+    b = BugReview(1, "u", series=[
+        SeriesStatus("jammy", "In Progress", version="22.04"),
+        SeriesStatus("devel", "Fix Released", codename="stonking", version="26.10"),
+        SeriesStatus("noble", "Fix Committed", version="24.04"),
+        SeriesStatus("focal", "Won't Fix", version="20.04", eol=True),
+    ])
+    chips = release_chips(b)
+    assert [c["letter"] for c in chips] == ["S", "N", "J", "F"]
+    assert [c["cls"] for c in chips] == ["released", "committed", "progress", "closed eol"]
+    assert chips[0]["title"] == "stonking (devel) 26.10: Fix Released"
+    assert chips[3]["title"] == "focal 20.04: Won't Fix (EOL)"

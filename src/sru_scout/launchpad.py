@@ -50,6 +50,17 @@ def guess_series(text: str, known: list[UbuntuSeries]) -> list[str]:
     return [name for _, name in sorted(hits)]
 
 
+def annotate_series(statuses: list[SeriesStatus], known: list[UbuntuSeries]) -> None:
+    """Fill in release name, version and EOL flag; the devel task stands for the release in development."""
+    by_name = {s.name: s for s in known}
+    devel = next((s for s in known if s.status in ("Active Development", "Pre-release Freeze")), None)
+    for status in statuses:
+        release = devel if status.series == "devel" else by_name.get(status.series)
+        status.eol = status.series != "devel" and not (release and release.active)
+        if release:
+            status.codename, status.version = release.name, release.version
+
+
 class LaunchpadClient:
     def __init__(self, session: requests.Session | None = None) -> None:
         self.session = session or make_session()

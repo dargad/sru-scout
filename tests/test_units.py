@@ -1,9 +1,9 @@
 from sru_scout.blockers import analyze_comments, analyze_tags, has_sru_template
 from sru_scout.jira import JiraIssue, adf_to_text, extract_bug_ids
-from sru_scout.launchpad import UbuntuSeries, guess_series
+from sru_scout.launchpad import UbuntuSeries, annotate_series, guess_series
 from sru_scout.lint import parse_findings
 from sru_scout.llm import parse_reply
-from sru_scout.models import Comment
+from sru_scout.models import Comment, SeriesStatus
 
 SERIES = [UbuntuSeries("jammy", "22.04", "Supported"), UbuntuSeries("noble", "24.04", "Current Stable Release")]
 
@@ -30,6 +30,17 @@ def test_guess_series_by_name_and_version():
     assert guess_series("fix_24.04.diff and jammy", SERIES) == ["noble", "jammy"]
     assert guess_series("against 1.0.7-6ubuntu0.1", SERIES) == []
     assert guess_series("version 1.22.04.3", SERIES) == []
+
+
+def test_annotate_series_maps_devel_to_release_in_development():
+    known = SERIES + [UbuntuSeries("stonking", "26.10", "Active Development"), UbuntuSeries("mantic", "23.10", "Obsolete")]
+    tasks = [SeriesStatus("devel", "New"), SeriesStatus("noble", "In Progress"), SeriesStatus("mantic", "Triaged")]
+    annotate_series(tasks, known)
+    assert [(t.codename, t.version, t.eol) for t in tasks] == [
+        ("stonking", "26.10", False),
+        ("noble", "24.04", False),
+        ("mantic", "23.10", True),
+    ]
 
 
 def test_parse_findings_tolerates_preamble():

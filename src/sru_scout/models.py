@@ -61,6 +61,8 @@ class SeriesStatus:
     assignee: str = ""
     url: str = ""
     eol: bool = False  # series is no longer supported, so a pending task is irrelevant
+    codename: str = ""  # release the task targets; for "devel" the release currently in development
+    version: str = ""  # e.g. "24.04"
 
     @property
     def fixed(self) -> bool:

@@ -74,6 +74,14 @@
   .flag.warn { background: #fdeee8; border-color: var(--orange); color: #b34700; }
   .flag.good { background: #e8f3ea; border-color: var(--ready); color: var(--ready); }
 
+  .rel { display: inline-block; min-width: 1.3rem; padding: 0 .25rem; margin-right: .15rem; text-align: center; font-size: .75rem; font-weight: 500; line-height: 1.25rem; border: 1px solid transparent; border-radius: 3px; color: #fff; cursor: default; }
+  .rel.released { background: var(--ready); } .rel.committed { background: #0b7285; } .rel.progress { background: var(--review); color: #111; }
+  .rel.open { background: #fff; border-color: var(--warm-grey); color: var(--text); }
+  .rel.incomplete { background: #fff; border-color: var(--blocked); color: var(--blocked); }
+  .rel.closed { background: var(--light); border-color: var(--border); color: var(--warm-grey); text-decoration: line-through; }
+  .rel.eol { opacity: .4; }
+  .legend { font-size: .8rem; color: var(--muted); margin: 0 0 .6rem; } .legend .rel { margin-right: .35rem; }
+
   .artifact { margin: .35rem 0; }
   .artifact summary { cursor: pointer; }
   .pill { font-size: .75rem; font-weight: 500; padding: 0 .45rem; border-radius: 10px; color: #fff; margin-left: .25rem; }
@@ -112,8 +120,11 @@
 
   {% if todo %}
   <h2>Where to look</h2>
+  <p class="legend">Releases:
+    <span class="rel released">Fix Released</span><span class="rel committed">Fix Committed</span><span class="rel progress">In Progress</span><span class="rel incomplete">Incomplete</span><span class="rel open">New / Confirmed / Triaged</span><span class="rel closed">Won't Fix / Invalid</span><span class="rel open eol">EOL</span>
+  </p>
   <table class="overview">
-    <tr><th>Status</th><th>Jira</th><th>Launchpad bug</th><th>Package</th><th>Main issue</th></tr>
+    <tr><th>Status</th><th>Jira</th><th>Launchpad bug</th><th>Package</th><th>Releases</th><th>Main issue</th></tr>
     {% for r in todo %}
     <tr class="row lvl {{ r.level }}" data-level="{{ r.level }}">
       <td class="lvlcell"><span class="badge lvl {{ r.level }}">{{ labels[r.level] }}</span></td>
@@ -123,6 +134,7 @@
         {% else %}<span class="muted">{{ r.summary }}</span>{% endfor %}
       </td>
       <td class="nowrap">{% for bug in r.bugs %}<div><code>{{ bug.package or '?' }}</code></div>{% endfor %}</td>
+      <td class="nowrap">{% for bug in r.bugs %}<div>{% for c in release_chips(bug) %}<span class="rel {{ c.cls }}" title="{{ c.title }}">{{ c.letter }}</span>{% else %}<span class="muted">&ndash;</span>{% endfor %}</div>{% endfor %}</td>
       <td>
         {% for mi in main_issues(r) %}<div>{% if mi.label %}<b>{{ mi.label }}</b> {% endif %}{{ mi.text }}{% if mi.more %} <span class="more">(+{{ mi.more }} more)</span>{% endif %}</div>{% endfor %}
       </td>
