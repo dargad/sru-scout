@@ -12,7 +12,14 @@ from sru_scout.models import LEVELS, BugReview, IssueReview
 
 _env = Environment(loader=PackageLoader("sru_scout", "templates"), autoescape=select_autoescape(["html", "j2"]))
 
-LABELS = {"blocked": "Blocked", "attention": "Needs attention", "review": "To review", "ready": "Ready", "done": "Done"}
+LABELS = {
+    "blocked": "Blocked",
+    "engineer-attention": "Engineer attention",
+    "sponsor-attention": "Sponsor attention",
+    "review": "To review",
+    "ready": "Ready",
+    "done": "Done",
+}
 _SEVERITY_ORDER = {"error": 0, "warning": 1, "info": 2}
 
 

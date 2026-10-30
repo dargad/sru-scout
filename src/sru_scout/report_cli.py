@@ -10,10 +10,18 @@ from rich.text import Text
 
 from sru_scout.models import LEVELS, BugReview, IssueReview
 
-STYLES = {"blocked": "bold red", "attention": "yellow", "review": "cyan", "ready": "green", "done": "dim green"}
+STYLES = {
+    "blocked": "bold red",
+    "engineer-attention": "yellow",
+    "sponsor-attention": "magenta",
+    "review": "cyan",
+    "ready": "green",
+    "done": "dim green",
+}
 LABELS = {
     "blocked": "BLOCKED",
-    "attention": "ATTENTION",
+    "engineer-attention": "ENGINEER-ATTENTION",
+    "sponsor-attention": "SPONSOR-ATTENTION",
     "review": "REVIEW",
     "ready": "READY",
     "done": "DONE",

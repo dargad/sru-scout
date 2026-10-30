@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 # Ordered from worst to best; used for sorting and the report summary.
-LEVELS = ("blocked", "attention", "review", "ready", "done")
+# The attention levels say whose move it is: the patch author/bug owner or the sponsor/uploader.
+LEVELS = ("blocked", "engineer-attention", "sponsor-attention", "review", "ready", "done")
 
 # Launchpad bug task statuses
 FIXED_STATUSES = {"Fix Committed", "Fix Released"}
@@ -136,7 +137,7 @@ class BugReview:
     blockers: list[Blocker] = field(default_factory=list)
     attention_reasons: list[str] = field(default_factory=list)
     findings: list[Finding] = field(default_factory=list)
-    level: str = "attention"
+    level: str = "engineer-attention"
 
     @property
     def label(self) -> str:
@@ -156,4 +157,4 @@ class IssueReview:
     assignee: str = ""
     bugs: list[BugReview] = field(default_factory=list)
     reasons: list[str] = field(default_factory=list)
-    level: str = "attention"
+    level: str = "engineer-attention"

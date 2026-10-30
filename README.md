@@ -8,7 +8,7 @@ For every card it:
 2. Reads the per-series bug task status. Series that are *Fix Committed* / *Fix Released* (or closed / EOL) are skipped.
 3. For the remaining series it collects attached patches and linked merge proposals and runs `sru-lint check <url>` on each (patch attachment data, or the merge proposal preview diff).
 4. Scans bug tags, bug comments, merge proposal comments, votes and status for blockers (rule based; optionally an LLM pass).
-5. Classifies each card as `blocked`, `attention`, `review`, `ready` or `done` and renders a CLI and/or HTML report.
+5. Classifies each card as `blocked`, `engineer-attention`, `sponsor-attention`, `review`, `ready` or `done` and renders a CLI and/or HTML report.
 
 ## Setup
 
@@ -38,16 +38,17 @@ uv run sru-scout review --bug 2172396 --html /tmp/x.html
 uv run sru-scout review --jql 'status = "In Review" ORDER BY updated DESC' --limit 20
 ```
 
-Use `--fail-on-attention` to get exit code 1 when any card is blocked or needs attention (cron/CI).
+Use `--fail-on-attention` to get exit code 1 when any card is blocked or needs engineer or sponsor attention (cron/CI).
 
 ### Levels
 
 | Level | Meaning |
 |-------|---------|
 | `blocked` | Unresolved strong blocker: verification failed, `block-proposed*` / `regression-*` tags, rejected/disapproved MP, NACK, FTBFS, autopkgtest regressions |
-| `attention` | sru-lint errors or could not run, no patch/MP for a pending series, incomplete SRU template, reviewer change requests, inaccessible bug, no bug found in the card |
-| `review` | sru-lint warnings, possibly-resolved concerns, development release not fixed yet |
-| `ready` | Patches lint clean, no blockers detected |
+| `engineer-attention` | The patch author / bug owner has to act: incomplete SRU template, no patch/MP for a pending series, sru-lint errors, reviewer change requests, bug Incomplete, not verified in time or not building in -proposed, inaccessible bug, no bug found in the card |
+| `sponsor-attention` | A sponsor / uploader has to act: nothing is left for the engineer and the patches/MPs for series not yet in -proposed wait for review and upload, or sru-lint could not run on them |
+| `review` | sru-lint warnings, possibly-resolved concerns, development release not fixed yet (listed under `sponsor-attention` when a sponsor is needed anyway) |
+| `ready` | Nothing to do right now, e.g. the fix is in -proposed awaiting verification |
 | `done` | Every series task is Fix Committed/Released or closed |
 
 Comment analysis is keyword based and deliberately conservative: it flags things for a human to read, it does not approve anything. A finding is marked "possibly resolved" when a later comment contains words like "fixed" or "updated".

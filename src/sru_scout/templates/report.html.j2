@@ -8,7 +8,8 @@
   :root {
     --aubergine: #2c001e; --orange: #e95420; --warm-grey: #aea79f; --light: #f7f7f7; --border: #d9d9d9;
     --text: #111; --muted: #666;
-    --blocked: #c7162b; --attention: #e95420; --review: #f99b0f; --ready: #0e8420; --done: #8a8a8a;
+    --blocked: #c7162b; --engineer-attention: #e95420; --sponsor-attention: #772953;
+    --review: #f99b0f; --ready: #0e8420; --done: #8a8a8a;
   }
   * { box-sizing: border-box; }
   body { margin: 0; font: 16px/1.5 "Ubuntu", "Ubuntu Sans", "Helvetica Neue", Arial, sans-serif; color: var(--text); background: #fff; }
@@ -31,9 +32,11 @@
   .tile .n { font-size: 1.4rem; font-weight: 300; line-height: 1.1; display: block; }
   .tile .l { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 
-  .lvl { --c: var(--done); } .lvl.blocked { --c: var(--blocked); } .lvl.attention { --c: var(--attention); }
+  .lvl { --c: var(--done); } .lvl.blocked { --c: var(--blocked); }
+  .lvl.engineer-attention { --c: var(--engineer-attention); } .lvl.sponsor-attention { --c: var(--sponsor-attention); }
   .lvl.review { --c: var(--review); } .lvl.ready { --c: var(--ready); } .lvl.done { --c: var(--done); }
-  .tile.blocked { --c: var(--blocked); } .tile.attention { --c: var(--attention); } .tile.review { --c: var(--review); }
+  .tile.blocked { --c: var(--blocked); } .tile.engineer-attention { --c: var(--engineer-attention); }
+  .tile.sponsor-attention { --c: var(--sponsor-attention); } .tile.review { --c: var(--review); }
   .tile.ready { --c: var(--ready); } .tile.done { --c: var(--done); }
   .badge { display: inline-block; min-width: 5.6rem; text-align: center; font-size: .7rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; padding: .1rem .5rem; color: #fff; background: var(--c); border-radius: 2px; }
   .badge.review { color: #111; }

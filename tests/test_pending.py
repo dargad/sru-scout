@@ -48,10 +48,10 @@ def bug(entry_flags, task_status="Fix Committed", builds=()):
 def test_fixed_but_in_proposed_is_not_done():
     assert bug([]).level == "ready"
     assert bug(["verified"]).level == "review"
-    assert bug(["incomplete"]).level == "attention"
+    assert bug(["incomplete"]).level == "engineer-attention"
     assert bug(["verification-failed"]).level == "blocked"
     assert bug(["verified", "block-proposed"]).level == "blocked"
-    assert bug([], builds=["amd64: Failed to build"]).level == "attention"
+    assert bug([], builds=["amd64: Failed to build"]).level == "engineer-attention"
 
 
 def test_proposed_needs_no_patches_even_if_task_not_fixed():

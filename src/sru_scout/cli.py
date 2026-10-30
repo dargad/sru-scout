@@ -122,7 +122,7 @@ def review(args: argparse.Namespace) -> int:
         with open(args.json, "w", encoding="utf-8") as fh:
             json.dump([dataclasses.asdict(r) for r in reviews], fh, indent=2)
         console.print(f"JSON report: {args.json}")
-    if args.fail_on_attention and any(r.level in LEVELS[:2] for r in reviews):
+    if args.fail_on_attention and any(r.level in LEVELS[:3] for r in reviews):
         return 1
     return 0
 

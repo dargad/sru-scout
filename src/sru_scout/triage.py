@@ -9,8 +9,8 @@ from sru_scout.pending import REPORT_URL
 _PENDING_FLAGS = {
     "verification-failed": ("blocked", "verification failed"),
     "block-proposed": ("blocked", "tagged block-proposed, double-check before release"),
-    "incomplete": ("attention", "bug is Incomplete"),
-    "removal-candidate": ("attention", "candidate for removal from -proposed (no verification)"),
+    "incomplete": ("engineer-attention", "bug is Incomplete"),
+    "removal-candidate": ("engineer-attention", "candidate for removal from -proposed (no verification)"),
     "verified": ("review", "verified, can be released"),
     "messages": ("review", "new comments since it was accepted in -proposed"),
     "broken": ("review", "listed as duplicate/inaccessible"),
@@ -40,7 +40,7 @@ def classify_bug(bug: BugReview) -> None:
         bug.attention_reasons = [f.text for f in bug.findings]
 
     if not bug.accessible:
-        flag("attention", bug.error or "Launchpad bug is not accessible (private?)", bug.url)
+        flag("engineer-attention", bug.error or "Launchpad bug is not accessible (private?)", bug.url)
         finish()
         return
 
@@ -53,7 +53,7 @@ def classify_bug(bug: BugReview) -> None:
         finish()
         return
     if not bug.series:
-        flag("attention", "Bug has no Ubuntu package tasks", bug.url)
+        flag("engineer-attention", "Bug has no Ubuntu package tasks", bug.url)
 
     for p in bug.pending:
         age = f", {p.days} days" if p.days is not None else ""
@@ -63,7 +63,7 @@ def classify_bug(bug: BugReview) -> None:
             if name in _PENDING_FLAGS:
                 flag(_PENDING_FLAGS[name][0], f"{where}: {_PENDING_FLAGS[name][1]}", report_url)
         if p.builds_not_ok:
-            flag("attention", f"{where}: builds not OK ({', '.join(p.builds_not_ok)})", report_url)
+            flag("engineer-attention", f"{where}: builds not OK ({', '.join(p.builds_not_ok)})", report_url)
         if not p.flags:
             found.append(Finding("ready", f"{where}: awaiting verification", report_url))
         task = next((s for s in bug.series if s.series == p.series), None)
@@ -74,7 +74,7 @@ def classify_bug(bug: BugReview) -> None:
         flag("review", "Development release is not fixed yet", bug.url)
 
     if not bug.has_sru_template:
-        flag("attention", "SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete", bug.url)
+        flag("engineer-attention", "SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete", bug.url)
 
     artifacts = [(p.title, p.series, p.lint, p.web_url) for p in bug.patches]
     artifacts += [
@@ -83,22 +83,22 @@ def classify_bug(bug: BugReview) -> None:
     ]
     if to_upload or not bug.series:
         if not artifacts:
-            flag("attention", "No patches or merge proposals found for the pending series", bug.url)
+            flag("engineer-attention", "No patches or merge proposals found for the pending series", bug.url)
         else:
             unattributed = any(not series for _, series, _, _ in artifacts)
             covered = {s for _, series, _, _ in artifacts for s in series}
             if not unattributed:
                 missing = [s.series for s in to_upload if s.series != "devel" and s.series not in covered]
                 if missing:
-                    flag("attention", f"No patch/MP identified for: {', '.join(missing)}", bug.url)
+                    flag("engineer-attention", f"No patch/MP identified for: {', '.join(missing)}", bug.url)
 
     for name, _, lint, url in artifacts:
         if lint is None:
             continue
         if not lint.ran:
-            flag("attention", f"sru-lint did not run on {name}: {lint.error}", url)
+            flag("sponsor-attention", f"sru-lint did not run on {name}: {lint.error}", url)
         elif lint.count("error"):
-            flag("attention", f"sru-lint: {lint.count('error')} error(s) in {name}", url)
+            flag("engineer-attention", f"sru-lint: {lint.count('error')} error(s) in {name}", url)
         elif lint.count("warning"):
             flag("review", f"sru-lint: {lint.count('warning')} warning(s) in {name}", url)
 
@@ -111,13 +111,18 @@ def classify_bug(bug: BugReview) -> None:
             flag_name in reported_by_pending and b.summary.startswith(prefix) for flag_name, prefix in _TAG_DUPLICATES
         ):
             continue
-        flag("blocked" if b.severity == "blocker" else "attention", b.summary, b.url)
+        flag("blocked" if b.severity == "blocker" else "engineer-attention", b.summary, b.url)
     if resolved:
         flag(
             "review",
             f"{len(resolved)} earlier concern(s) in comments look resolved by later comments; skim to confirm",
             resolved[0].url,
         )
+
+    # Nothing left for the engineer; uploads still in the unapproved queue look the same as not uploaded.
+    if to_upload and artifacts and level not in ("blocked", "engineer-attention"):
+        series = ", ".join(s.series for s in to_upload)
+        flag("sponsor-attention", f"Ready for a sponsor to review and upload: {series}", bug.url)
 
     if not found:
         linted = any(lint is not None for _, _, lint, _ in artifacts)
@@ -132,7 +137,7 @@ def classify_bug(bug: BugReview) -> None:
 
 def classify_issue(issue: IssueReview) -> None:
     if not issue.bugs:
-        issue.level = "attention"
+        issue.level = "engineer-attention"
         issue.reasons = ["No Launchpad bug could be found in the Jira card"]
         return
     issue.level = _worst(*(b.level for b in issue.bugs))
