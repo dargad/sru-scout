@@ -4,7 +4,7 @@ Agent that reviews the Ubuntu SRU Jira board ([SI board 1017](https://warthogs.a
 
 For every card it:
 
-1. Finds the Launchpad bug(s) referenced by the card (summary, description, links, remote links, comments as a last resort).
+1. Finds the Launchpad bug(s) referenced by the card (summary, description, links, remote links, comments as a last resort). Cards without one are skipped.
 2. Reads the per-series bug task status. Series that are *Fix Committed* / *Fix Released* (or closed / EOL) are skipped.
 3. For the remaining series it collects attached patches and linked merge proposals and runs `sru-lint check <url>` on each (patch attachment data, or the merge proposal preview diff).
 4. Scans bug tags, bug comments, merge proposal comments, votes and status for blockers (rule based; optionally an LLM pass).
@@ -45,7 +45,7 @@ Use `--fail-on-attention` to get exit code 1 when any card is blocked or needs e
 | Level | Meaning |
 |-------|---------|
 | `blocked` | Unresolved strong blocker: verification failed, `block-proposed*` / `regression-*` tags, rejected/disapproved MP, NACK, FTBFS, autopkgtest regressions |
-| `engineer-attention` | The patch author / bug owner has to act: incomplete SRU template, no patch/MP for a pending series, sru-lint errors, reviewer change requests, bug Incomplete, not verified in time or not building in -proposed, inaccessible bug, no bug found in the card |
+| `engineer-attention` | The patch author / bug owner has to act: incomplete SRU template, no patch/MP for a pending series, sru-lint errors, reviewer change requests, bug Incomplete, not verified in time or not building in -proposed, inaccessible bug |
 | `sponsor-attention` | A sponsor / uploader has to act: nothing is left for the engineer and the patches/MPs for series not yet in -proposed wait for review and upload, or sru-lint could not run on them |
 | `review` | sru-lint warnings, possibly-resolved concerns, development release not fixed yet (listed under `sponsor-attention` when a sponsor is needed anyway) |
 | `ready` | Nothing to do right now, e.g. the fix is in -proposed awaiting verification |

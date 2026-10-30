@@ -46,3 +46,20 @@ def test_limit():
     session = FakeSession({0: {"total": 2, "issues": [raw("SI-1", "LP: #1"), raw("SI-2", "LP: #2")]}})
     client = JiraClient("a", "b", session=session)
     assert len(list(client.board_issues(limit=1))) == 1
+
+
+def test_cards_without_bug_are_skipped_and_not_counted(monkeypatch):
+    from sru_scout import cli
+
+    class NoRemoteLinks(FakeSession):
+        def get(self, url, params=None, timeout=None):
+            if url.endswith("/remotelink"):
+                return FakeResponse([])
+            return super().get(url, params, timeout)
+
+    pages = {0: {"total": 3, "issues": [raw("SI-1", "sponsor queue"), raw("SI-2", "LP: #2"), raw("SI-3", "LP: #3")]}}
+    monkeypatch.setattr(cli, "JiraClient", lambda email, token, url: JiraClient(email, token, url, session=NoRemoteLinks(pages)))
+    monkeypatch.setenv("JIRA_EMAIL", "a@b.c")
+    monkeypatch.setenv("JIRA_API_TOKEN", "tok")
+    args = cli.build_parser().parse_args(["review", "--limit", "1"])
+    assert [i.key for i in cli._collect_issues(args)] == ["SI-2"]

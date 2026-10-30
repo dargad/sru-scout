@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from itertools import islice
 
 from rich.console import Console
 
@@ -29,7 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     src.add_argument("--jql", default=DEFAULT_JQL, help="extra JQL applied to the board (default: %(default)r)")
     src.add_argument("--issue", action="append", default=[], metavar="KEY", help="review only this Jira key (repeatable)")
     src.add_argument("--bug", action="append", default=[], type=int, metavar="ID", help="review a Launchpad bug directly, no Jira needed (repeatable)")
-    src.add_argument("--limit", type=int, help="maximum number of board cards")
+    src.add_argument("--limit", type=int, help="maximum number of board cards (with a Launchpad bug) to review")
     src.add_argument("--jira-url", default=os.environ.get("JIRA_URL", DEFAULT_BASE_URL))
     chk = r.add_argument_group("analysis")
     chk.add_argument("--no-lint", action="store_true", help="skip running sru-lint")
@@ -61,10 +62,11 @@ def _collect_issues(args: argparse.Namespace) -> list[JiraIssue]:
             "or use --bug to review Launchpad bugs without Jira."
         )
     jira = JiraClient(email, token, args.jira_url)
+    # Cards without a Launchpad bug are out of scope, so they don't count towards --limit either.
     if args.issue:
-        issues = [jira.issue(k) for k in args.issue]
+        issues = [i for i in map(jira.issue, args.issue) if i.bug_ids()]
     else:
-        issues = list(jira.board_issues(args.board, args.jql, args.limit))
+        issues = list(islice((i for i in jira.board_issues(args.board, args.jql) if i.bug_ids()), args.limit))
     return issues + _bug_issues(args.bug)
 
 
