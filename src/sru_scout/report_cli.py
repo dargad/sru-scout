@@ -20,8 +20,8 @@ STYLES = {
 }
 LABELS = {
     "blocked": "BLOCKED",
-    "engineer-attention": "ENGINEER-ATTENTION",
-    "sponsor-attention": "SPONSOR-ATTENTION",
+    "engineer-attention": "ENGINEER",
+    "sponsor-attention": "SPONSOR",
     "review": "REVIEW",
     "ready": "READY",
     "done": "DONE",

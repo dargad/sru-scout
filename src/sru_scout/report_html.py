@@ -14,8 +14,8 @@ _env = Environment(loader=PackageLoader("sru_scout", "templates"), autoescape=se
 
 LABELS = {
     "blocked": "Blocked",
-    "engineer-attention": "Engineer attention",
-    "sponsor-attention": "Sponsor attention",
+    "engineer-attention": "Engineer",
+    "sponsor-attention": "Sponsor",
     "review": "To review",
     "ready": "Ready",
     "done": "Done",

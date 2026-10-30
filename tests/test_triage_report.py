@@ -112,7 +112,7 @@ def test_progress_line_has_bug_number_package_and_title():
     issue = IssueReview("SI-9", "u", "card", bugs=[b])
     classify_issue(issue)
     text = progress_line(3, 43, issue).plain
-    assert text.startswith("[3/43] SI-9 ENGINEER-ATTENTION")
+    assert text.startswith("[3/43] SI-9 ENGINEER")
     assert "LP: #1 (foo) [SRU] fix the thing" in text
     empty = IssueReview("SI-10", "u", "card summary")
     classify_issue(empty)
@@ -161,6 +161,6 @@ def test_html_overview_and_details():
     classify_issue(finished)
     html = render_html([issue, finished])
     assert "Where to look" in html and 'id="card-SI-1"' in html
-    assert "Engineer attention" in html and "Sponsor attention" in html
+    assert 'badge lvl engineer-attention">Engineer<' in html and '<span class="l">Sponsor</span>' in html
     assert 'id="card-SI-2"' not in html and "Done (1)" in html
     assert html.index("error") < html.index("info</span>")

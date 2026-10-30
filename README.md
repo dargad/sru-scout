@@ -45,8 +45,8 @@ Use `--fail-on-attention` to get exit code 1 when any card is blocked or needs e
 | Level | Meaning |
 |-------|---------|
 | `blocked` | Unresolved strong blocker: verification failed, `block-proposed*` / `regression-*` tags, rejected/disapproved MP, NACK, FTBFS, autopkgtest regressions |
-| `engineer-attention` | The patch author / bug owner has to act: incomplete SRU template, no patch/MP for a pending series, sru-lint errors, reviewer change requests, bug Incomplete, not verified in time or not building in -proposed, inaccessible bug |
-| `sponsor-attention` | A sponsor / uploader has to act: nothing is left for the engineer and the patches/MPs for series not yet in -proposed wait for review and upload, or sru-lint could not run on them |
+| `engineer-attention` (shown as *Engineer*) | The patch author / bug owner has to act: incomplete SRU template, no patch/MP for a pending series, sru-lint errors, reviewer change requests, bug Incomplete, not verified in time or not building in -proposed, inaccessible bug |
+| `sponsor-attention` (shown as *Sponsor*) | A sponsor / uploader has to act: nothing is left for the engineer and the patches/MPs for series not yet in -proposed wait for review and upload, or sru-lint could not run on them |
 | `review` | sru-lint warnings, possibly-resolved concerns, development release not fixed yet (listed under `sponsor-attention` when a sponsor is needed anyway) |
 | `ready` | Nothing to do right now, e.g. the fix is in -proposed awaiting verification |
 | `done` | Every series task is Fix Committed/Released or closed |

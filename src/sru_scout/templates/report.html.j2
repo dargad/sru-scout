@@ -116,7 +116,7 @@
     <tr><th>Status</th><th>Jira</th><th>Launchpad bug</th><th>Package</th><th>Main issue</th></tr>
     {% for r in todo %}
     <tr class="row lvl {{ r.level }}" data-level="{{ r.level }}">
-      <td class="lvlcell"><span class="badge lvl {{ r.level }}">{{ r.level }}</span></td>
+      <td class="lvlcell"><span class="badge lvl {{ r.level }}">{{ labels[r.level] }}</span></td>
       <td class="nowrap"><a href="#card-{{ r.key }}">{{ r.key }}</a></td>
       <td>
         {% for bug in r.bugs %}<div>{{ link(bug.url, bug.label) }} {{ bug.short_title(70) }}</div>
@@ -135,7 +135,7 @@
   {% for r in todo %}
   <details class="card lvl {{ r.level }}" id="card-{{ r.key }}" data-level="{{ r.level }}">
     <summary>
-      <span class="badge lvl {{ r.level }}">{{ r.level }}</span>
+      <span class="badge lvl {{ r.level }}">{{ labels[r.level] }}</span>
       <strong>{{ link(r.url, r.key) }}</strong>
       <span>{{ r.summary }}</span>
       <span class="muted">{{ r.status }}{% if r.assignee %} &middot; {{ r.assignee }}{% endif %}</span>
