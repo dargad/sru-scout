@@ -35,23 +35,64 @@ jobs:
           SRU_SCOUT_LLM_MODEL: ${{ vars.SRU_SCOUT_LLM_MODEL }}
           SRU_SCOUT_LLM_API_KEY: ${{ secrets.SRU_SCOUT_LLM_API_KEY }}
         run: |
-          mkdir -p site
+          out="run/$(date -u +%Y-%m-%dT%H%MZ)"
+          mkdir -p "$out"
           # adds --llm only when the LLM repository variables are set
-          uv run sru-scout review --html site/index.html ${SRU_SCOUT_LLM_MODEL:+--llm}
+          uv run sru-scout review --html "$out/index.html" --json "$out/report.json" ${SRU_SCOUT_LLM_MODEL:+--llm}
 
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
-          path: site
+          name: run
+          path: run
 
-  deploy:
+  # Separate job so the write token never shares a runner with third-party code or the Jira secrets
+  publish:
     needs: report
     runs-on: ubuntu-latest
     permissions:
+      contents: write
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v7
+
+      - name: Switch to the reports branch
+        run: |
+          if git ls-remote --exit-code --heads origin reports > /dev/null; then
+            git fetch --depth=1 origin reports
+            git switch -C reports FETCH_HEAD
+          else
+            git switch --orphan reports
+          fi
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: run
+          path: runs
+
+      - name: Commit the run
+        run: |
+          stamps=$(find runs -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -r)
+          latest=$(head -n 1 <<< "$stamps")
+          cp "runs/$latest/index.html" index.html
+          {
+            echo '<!doctype html><meta charset="utf-8"><title>SRU report history</title><h1>SRU report history</h1><ul>'
+            while read -r s; do
+              echo "<li><a href=\"$s/\">$s</a> (<a href=\"$s/report.json\">JSON</a>)</li>"
+            done <<< "$stamps"
+            echo '</ul>'
+          } > runs/index.html
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Report $latest (sru-scout ${GITHUB_SHA::7})"
+          git push -q origin reports
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: .
+
       - id: deployment
         uses: actions/deploy-pages@v5
