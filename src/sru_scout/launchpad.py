@@ -82,14 +82,15 @@ class LaunchpadClient:
         return self._get(f"{API}/bugs/{bug_id}")
 
     def series_statuses(self, bug: dict[str, Any]) -> tuple[str, list[SeriesStatus]]:
-        """Return (source package, per-series statuses) from the bug's Ubuntu tasks."""
-        package = ""
+        """Return (source package(s), per-series statuses) from the bug's Ubuntu tasks."""
+        packages: list[str] = []
         result: list[SeriesStatus] = []
         for task in self._entries(bug["bug_tasks_collection_link"]):
             m = _TASK_TARGET.match(task.get("bug_target_name", ""))
             if not m:
                 continue
-            package = package or m["pkg"]
+            if m["pkg"] not in packages:
+                packages.append(m["pkg"])
             result.append(
                 SeriesStatus(
                     series=(m["series"] or "devel").lower(),
@@ -99,7 +100,7 @@ class LaunchpadClient:
                     url=task["web_link"],
                 )
             )
-        return package, result
+        return ", ".join(packages), result
 
     def patches(self, bug: dict[str, Any]) -> list[Patch]:
         known = self.ubuntu_series()

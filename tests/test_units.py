@@ -86,3 +86,18 @@ def test_llm_reply_parsing():
     result = parse_reply(reply, "https://bug")
     assert [(b.severity, b.url) for b in result] == [("blocker", "https://bug"), ("concern", "https://bug")]
     assert parse_reply("no json", "u") == []
+
+
+def test_sru_team_boilerplate_is_ignored_and_not_a_resolution():
+    accepted = "Hello X, or anyone else affected,\n\nAccepted atlas into noble-proposed. If it is a regression, please report."
+    comments = [c("desc", "text"), c("a", "NACK this", 1), c("sru", accepted, 2)]
+    found = analyze_comments(comments)
+    assert [(b.severity, b.maybe_resolved) for b in found] == [("blocker", False)]
+
+
+def test_identical_findings_are_deduplicated():
+    from sru_scout.blockers import analyze_bug
+    from sru_scout.models import BugReview
+
+    comments = [c("desc", "text")] + [c("a", "please fix the changelog", i) for i in range(1, 4)]
+    assert len(analyze_bug(BugReview(1, "u"), comments)) == 1

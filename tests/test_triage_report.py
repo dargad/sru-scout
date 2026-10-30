@@ -123,3 +123,32 @@ def test_progress_line_description_only_when_not_done():
     classify_issue(issue)
     # The worst reason comes first even though the lint warning was found earlier.
     assert "-> NACK from reviewer" in progress_line(1, 1, issue).plain
+
+
+def test_resolved_concerns_are_grouped_and_tag_duplicates_dropped():
+    from sru_scout.models import PendingEntry
+
+    p = Patch("p", "w", "d", [], lint())
+    blockers = [Blocker("concern", f"c{i}", "comment", f"https://x/{i}", maybe_resolved=True) for i in range(5)]
+    blockers.append(Blocker("blocker", "Verification failed (verification-failed-noble)", "tag", "https://bug"))
+    b = bug([SeriesStatus("noble", "Fix Committed")], [p], blockers=blockers)
+    b.pending = [PendingEntry(1, "noble", "pkg", "1.0", 3, flags=["verification-failed"])]
+    classify_bug(b)
+    texts = [f.text for f in b.findings]
+    assert sum("look resolved" in t for t in texts) == 1 and "5 earlier" in " ".join(texts)
+    assert not any("verification-failed-noble" in t for t in texts)
+    assert b.findings[0].level == "blocked" and b.findings[0].url.startswith("https://static-reports")
+
+
+def test_html_overview_and_details():
+    p = Patch("fix.debdiff", "https://lp/a", "d", ["noble"], lint("error", "info"))
+    b = bug([SeriesStatus("noble", "In Progress")], [p], title="Some title")
+    done = bug([SeriesStatus("noble", "Fix Released")], title="Finished")
+    issue = IssueReview("SI-1", "https://jira/SI-1", "s", bugs=[b])
+    finished = IssueReview("SI-2", "https://jira/SI-2", "s", bugs=[done])
+    classify_issue(issue)
+    classify_issue(finished)
+    html = render_html([issue, finished])
+    assert "Where to look" in html and 'id="card-SI-1"' in html
+    assert 'id="card-SI-2"' not in html and "Done (1)" in html
+    assert html.index("error") < html.index("info</span>")

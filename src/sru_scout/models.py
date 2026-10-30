@@ -111,6 +111,15 @@ class PendingEntry:
 
 
 @dataclass
+class Finding:
+    """One reason a bug needs (or does not need) attention, with the page that backs it up."""
+
+    level: str  # one of LEVELS
+    text: str
+    url: str = ""
+
+
+@dataclass
 class BugReview:
     bug_id: int
     url: str
@@ -126,6 +135,7 @@ class BugReview:
     merge_proposals: list[MergeProposal] = field(default_factory=list)
     blockers: list[Blocker] = field(default_factory=list)
     attention_reasons: list[str] = field(default_factory=list)
+    findings: list[Finding] = field(default_factory=list)
     level: str = "attention"
 
     @property

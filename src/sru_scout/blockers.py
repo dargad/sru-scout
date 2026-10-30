@@ -36,6 +36,12 @@ _RESOLVED = re.compile(
 _BAD_VOTES = {"Disapprove": "blocker", "Needs Fixing": "concern", "Needs Information": "concern", "Resubmit": "concern", "Abstain": ""}
 _BAD_MP_STATUS = {"Rejected": "blocker", "Work in progress": "concern"}
 
+# Standard SRU-team messages (acceptance, verification, release notices) mention regressions and fixes by design.
+_BOILERPLATE = re.compile(
+    r"Accepted \S+ into \S+-proposed|The verification of the Stable Release Update for|This bug was fixed in the package",
+    re.I,
+)
+
 
 def has_sru_template(description: str) -> bool:
     text = description.lower()
@@ -56,11 +62,15 @@ def analyze_tags(tags: list[str], bug_url: str) -> list[Blocker]:
     return found
 
 
+def _is_noise(comment: Comment) -> bool:
+    return comment.author in BOT_AUTHORS or bool(_BOILERPLATE.search(comment.body))
+
+
 def analyze_comments(comments: list[Comment]) -> list[Blocker]:
     """Flag comments matching blocker patterns; mark them resolved when a later comment says so."""
     found: list[Blocker] = []
     for i, comment in enumerate(comments):
-        if comment.author in BOT_AUTHORS:
+        if _is_noise(comment):
             continue
         if comment.source == "bug" and i == 0:  # first message is the bug description
             continue
@@ -71,7 +81,7 @@ def analyze_comments(comments: list[Comment]) -> list[Blocker]:
                 continue
             snippet = " ".join(body[max(0, m.start() - 40) : m.end() + 80].split())
             later = comments[i + 1 :]
-            resolved = any(_RESOLVED.search(_strip_quotes(c.body)) for c in later if c.author not in BOT_AUTHORS)
+            resolved = any(_RESOLVED.search(_strip_quotes(c.body)) for c in later if not _is_noise(c))
             found.append(
                 Blocker(severity, f"{summary}: \"…{snippet}…\" ({comment.author})", "comment", comment.url, resolved)
             )
@@ -93,4 +103,7 @@ def analyze_bug(bug: BugReview, comments: list[Comment]) -> list[Blocker]:
         for b in analyze_comments(mp.comments):
             b.url = b.url or mp.web_url
             result.append(b)
-    return result
+    unique: dict[tuple[str, str], Blocker] = {}
+    for b in result:
+        unique.setdefault((b.severity, b.summary), b)
+    return list(unique.values())

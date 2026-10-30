@@ -62,6 +62,24 @@ def series_summary(bug: BugReview) -> Text:
     return text
 
 
+def _why_lines(review: IssueReview, limit: int = 3) -> Text:
+    """Top reasons per bug (already worst first); the LP label is only repeated when a card has several bugs."""
+    text = Text()
+    for bug in review.bugs:
+        if bug.level == "done":
+            continue
+        if len(review.bugs) > 1:
+            text.append(f"{bug.label}\n", style="bold")
+        for f in bug.findings[:limit]:
+            text.append(f"• {f.text}\n", style=STYLES.get(f.level, ""))
+        if len(bug.findings) > limit:
+            text.append(f"  (+{len(bug.findings) - limit} more)\n", style="dim")
+    if not review.bugs:
+        text.append("\n".join(f"• {r}" for r in review.reasons))
+    text.rstrip()
+    return text
+
+
 def render(reviews: list[IssueReview], console: Console, verbose: bool = False) -> None:
     ordered = sorted(reviews, key=lambda r: (LEVELS.index(r.level), r.key))
     counts = Counter(r.level for r in reviews)
@@ -89,7 +107,7 @@ def render(reviews: list[IssueReview], console: Console, verbose: bool = False) 
             level_text(review.level),
             Text.assemble((review.key, "bold"), f"\n{review.summary[:70]}\n{review.assignee}"),
             bugs or Text("-"),
-            "\n".join(f"- {r}" for r in review.reasons),
+            _why_lines(review),
         )
     console.print(table)
     hidden = counts.get("done", 0)

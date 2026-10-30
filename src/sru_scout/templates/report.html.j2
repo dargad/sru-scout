@@ -2,130 +2,239 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ title }}</title>
 <style>
-  body { font: 14px/1.45 system-ui, sans-serif; margin: 2rem auto; max-width: 1200px; color: #222; padding: 0 1rem; }
-  h1 { margin-bottom: .2rem; }
-  .meta { color: #666; margin-bottom: 1rem; }
-  .filters button { border: 1px solid #ccc; background: #fff; padding: .3rem .7rem; border-radius: 4px; cursor: pointer; margin-right: .3rem; }
-  .filters button.active { background: #222; color: #fff; }
-  .card { border: 1px solid #ddd; border-left-width: 6px; border-radius: 4px; margin: .7rem 0; background: #fff; }
-  .card.blocked { border-left-color: #c0392b; } .card.attention { border-left-color: #e6a100; }
-  .card.review { border-left-color: #2980b9; } .card.ready { border-left-color: #27ae60; } .card.done { border-left-color: #aaa; }
-  summary { padding: .6rem .8rem; cursor: pointer; display: flex; gap: .8rem; align-items: baseline; flex-wrap: wrap; }
-  .badge { font-size: 11px; font-weight: 700; padding: .1rem .5rem; border-radius: 10px; color: #fff; text-transform: uppercase; }
-  .badge.blocked { background: #c0392b; } .badge.attention { background: #e6a100; } .badge.review { background: #2980b9; }
-  .badge.ready { background: #27ae60; } .badge.done { background: #888; }
-  .body { padding: 0 1rem 1rem; }
-  .lp { flex-basis: 100%; color: #444; }
-  .reasons { margin: .2rem 0 .8rem; }
-  table { border-collapse: collapse; margin: .4rem 0 1rem; width: 100%; }
-  th, td { text-align: left; border-bottom: 1px solid #eee; padding: .25rem .5rem; vertical-align: top; }
-  .sev-error { color: #c0392b; font-weight: 600; } .sev-warning { color: #b9770e; } .sev-info { color: #666; }
-  .fixed { color: #27ae60; } .pending { color: #b9770e; font-weight: 600; } .muted { color: #888; }
-  code { background: #f4f4f4; padding: 0 .25rem; border-radius: 3px; }
+  :root {
+    --aubergine: #2c001e; --orange: #e95420; --warm-grey: #aea79f; --light: #f7f7f7; --border: #d9d9d9;
+    --text: #111; --muted: #666;
+    --blocked: #c7162b; --attention: #e95420; --review: #f99b0f; --ready: #0e8420; --done: #8a8a8a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 "Ubuntu", "Ubuntu Sans", "Helvetica Neue", Arial, sans-serif; color: var(--text); background: #fff; }
+  a { color: #0066cc; text-decoration: none; } a:hover { text-decoration: underline; }
+  code { font-family: "Ubuntu Mono", "DejaVu Sans Mono", monospace; font-size: .85em; background: var(--light); padding: 0 .3em; border-radius: 2px; }
+  .muted { color: var(--muted); }
+
+  header.top { background: var(--aubergine); color: #fff; border-bottom: 4px solid var(--orange); }
+  header.top .inner { max-width: 1200px; margin: 0 auto; padding: 1.2rem 1.5rem; display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+  header.top h1 { margin: 0; font-size: 1.6rem; font-weight: 300; letter-spacing: .01em; }
+  header.top h1 b { font-weight: 500; }
+  header.top .meta { color: #d8c5cf; font-size: .85rem; margin-left: auto; }
+  main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+  h2 { font-size: 1.15rem; font-weight: 400; margin: 2rem 0 .6rem; padding-bottom: .3rem; border-bottom: 1px solid var(--border); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .5rem; background: #fff; padding: .75rem 0; z-index: 2; }
+  @media (min-width: 900px) { .tiles { position: sticky; top: 0; } }
+  .tile { border: 1px solid var(--border); border-top: 4px solid var(--c, var(--warm-grey)); background: #fff; padding: .3rem .8rem; text-align: left; cursor: pointer; font: inherit; border-radius: 2px; }
+  .tile:hover, .tile.active { background: var(--light); box-shadow: inset 0 0 0 1px var(--c, var(--warm-grey)); }
+  .tile .n { font-size: 1.4rem; font-weight: 300; line-height: 1.1; display: block; }
+  .tile .l { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+
+  .lvl { --c: var(--done); } .lvl.blocked { --c: var(--blocked); } .lvl.attention { --c: var(--attention); }
+  .lvl.review { --c: var(--review); } .lvl.ready { --c: var(--ready); } .lvl.done { --c: var(--done); }
+  .tile.blocked { --c: var(--blocked); } .tile.attention { --c: var(--attention); } .tile.review { --c: var(--review); }
+  .tile.ready { --c: var(--ready); } .tile.done { --c: var(--done); }
+  .badge { display: inline-block; min-width: 5.6rem; text-align: center; font-size: .7rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; padding: .1rem .5rem; color: #fff; background: var(--c); border-radius: 2px; }
+  .badge.review { color: #111; }
+
+  table { border-collapse: collapse; width: 100%; }
+  th { text-align: left; font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 2px solid var(--border); padding: .35rem .6rem; }
+  td { border-bottom: 1px solid var(--border); padding: .45rem .6rem; vertical-align: top; overflow-wrap: anywhere; }
+  td.nowrap { white-space: nowrap; overflow-wrap: normal; }
+  table.overview tr:hover td { background: var(--light); }
+  table.overview td.lvlcell { border-left: 4px solid var(--c); white-space: nowrap; }
+  .more { color: var(--muted); font-size: .85rem; }
+
+  details.card { border: 1px solid var(--border); border-left: 4px solid var(--c); margin: .6rem 0; border-radius: 2px; }
+  details.card > summary { padding: .6rem .9rem; cursor: pointer; display: flex; gap: .75rem; align-items: baseline; flex-wrap: wrap; list-style: none; }
+  details.card > summary::-webkit-details-marker { display: none; }
+  details.card > summary::before { content: "\25B8"; color: var(--muted); }
+  details.card[open] > summary::before { content: "\25BE"; }
+  details.card[open] > summary { background: var(--light); }
+  .card .body { padding: .25rem 1rem 1rem; }
+  .bug h3 { font-size: 1.05rem; font-weight: 400; margin: 1rem 0 .4rem; }
+  .bug h3 .pkg { font-weight: 500; }
+  .bug h4 { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 1rem 0 .3rem; }
+
+  ul.findings { list-style: none; margin: 0; padding: 0; }
+  ul.findings li { padding: .25rem 0 .25rem 1.4rem; position: relative; overflow-wrap: anywhere; }
+  ul.findings li::before { content: ""; position: absolute; left: .3rem; top: .75rem; width: .6rem; height: .6rem; border-radius: 50%; background: var(--c); }
+  ul.findings li.ready::before, ul.findings li.done::before { background: transparent; border: 2px solid var(--c); }
+  ul.findings a { color: inherit; border-bottom: 1px dotted var(--muted); } ul.findings a:hover { text-decoration: none; border-bottom-style: solid; }
+  ul.findings li.ready, ul.findings li.done { color: var(--muted); }
+
+  .chip { display: inline-block; font-size: .8rem; padding: 0 .5rem; border-radius: 10px; background: var(--light); border: 1px solid var(--border); margin-right: .25rem; }
+  .st-fixed { color: var(--ready); font-weight: 500; } .st-pending { color: #b34700; font-weight: 500; } .st-muted { color: var(--muted); }
+  .flag { font-size: .75rem; padding: 0 .4rem; border-radius: 2px; background: var(--light); border: 1px solid var(--border); margin-right: .2rem; }
+  .flag.bad { background: #fbe9eb; border-color: var(--blocked); color: var(--blocked); }
+  .flag.warn { background: #fdeee8; border-color: var(--orange); color: #b34700; }
+  .flag.good { background: #e8f3ea; border-color: var(--ready); color: var(--ready); }
+
+  .artifact { margin: .35rem 0; }
+  .artifact summary { cursor: pointer; }
+  .pill { font-size: .75rem; font-weight: 500; padding: 0 .45rem; border-radius: 10px; color: #fff; margin-left: .25rem; }
+  .pill.error { background: var(--blocked); } .pill.warning { background: var(--review); color: #111; } .pill.info { background: var(--warm-grey); }
+  .pill.ok { background: var(--ready); }
+  table.lint { margin: .3rem 0 .6rem 1rem; width: calc(100% - 1rem); font-size: .9rem; }
+  .sev-error { color: var(--blocked); font-weight: 500; } .sev-warning { color: #b34700; } .sev-info { color: var(--muted); }
+
+  .done-list { columns: 2; column-gap: 2rem; font-size: .9rem; list-style: none; padding: 0; }
+  .done-list li { break-inside: avoid; padding: .15rem 0; }
+  .toolbar { display: flex; justify-content: flex-end; gap: .5rem; margin: .5rem 0; }
+  .toolbar button { font: inherit; font-size: .85rem; padding: .2rem .8rem; border: 1px solid var(--border); background: #fff; border-radius: 2px; cursor: pointer; }
+  .toolbar button:hover { background: var(--light); }
+  [hidden] { display: none !important; }
+  @media (max-width: 700px) { .done-list { columns: 1; } }
 </style>
 </head>
 <body>
 {% macro link(url, text) -%}
   {%- if url and url.startswith('https://') %}<a href="{{ url }}">{{ text }}</a>{% else %}{{ text }}{% endif -%}
 {%- endmacro %}
-<h1>{{ title }}</h1>
-<div class="meta">Generated {{ generated }} &middot; {{ reviews|length }} card(s)</div>
-<div class="filters">
-  <button class="active" data-level="all">All</button>
-  {% for level in levels %}<button data-level="{{ level }}">{{ level|capitalize }} ({{ counts[level] }})</button>{% endfor %}
-</div>
 
-{% for r in reviews %}
-<details class="card {{ r.level }}" data-level="{{ r.level }}" {% if r.level in ('blocked', 'attention') %}open{% endif %}>
-  <summary>
-    <span class="badge {{ r.level }}">{{ r.level }}</span>
-    <strong>{{ link(r.url, r.key) }}</strong>
-    <span>{{ r.summary }}</span>
-    <span class="muted">{{ r.status }}{% if r.assignee %} &middot; {{ r.assignee }}{% endif %}</span>
-    {% for bug in r.bugs %}
-    <span class="lp">{{ link(bug.url, bug.label) }} <code>{{ bug.package or '?' }}</code> {{ bug.short_title(80) if bug.title else '' }}</span>
+<header class="top"><div class="inner">
+  <h1><b>SRU</b> review</h1>
+  <span class="muted" style="color:#d8c5cf">{{ title }}</span>
+  <span class="meta">Generated {{ generated }} &middot; {{ reviews|length }} card(s)</span>
+</div></header>
+
+<main>
+  <div class="tiles" role="toolbar" aria-label="Filter by status">
+    <button class="tile active" data-level="all" style="--c: var(--aubergine)"><span class="n">{{ reviews|length }}</span><span class="l">All cards</span></button>
+    {% for level in levels %}
+    <button class="tile {{ level }}" data-level="{{ level }}"><span class="n">{{ counts[level] }}</span><span class="l">{{ labels[level] }}</span></button>
     {% endfor %}
-  </summary>
-  <div class="body">
-    <ul class="reasons">{% for reason in r.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
-    {% for bug in r.bugs %}
-    <h3>{{ link(bug.url, bug.label) }} {{ bug.title }}
-      {% if bug.package %}<small class="muted">({{ bug.package }})</small>{% endif %}</h3>
-    {% if bug.error %}<p class="sev-error">{{ bug.error }}</p>{% endif %}
-    {% if bug.series %}
-    <table>
-      <tr><th>Series</th><th>Status</th><th>Importance</th><th>Assignee</th></tr>
-      {% for s in bug.series %}
-      <tr><td>{{ link(s.url, s.series) }}</td>
-          <td class="{{ 'fixed' if s.fixed else 'muted' if (s.closed or s.eol) else 'pending' }}">{{ s.status }}{% if s.eol %} (EOL){% endif %}</td>
-          <td>{{ s.importance }}</td><td>{{ s.assignee }}</td></tr>
-      {% endfor %}
-    </table>
-    {% endif %}
+  </div>
 
-    {% if bug.pending %}
-    <h4>In -proposed (<a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html">pending-sru report</a>)</h4>
-    <table>
-      <tr><th>Series</th><th>Package</th><th>Version</th><th>Days</th><th>Uploader</th><th>State</th><th>Builds not OK</th></tr>
-      {% for p in bug.pending %}
-      <tr><td>{{ p.series }}</td><td>{{ p.package }}</td><td>{{ p.version }}</td><td>{{ p.days if p.days is not none else '' }}</td>
-          <td>{{ p.uploader }}</td>
-          <td>{% for f in p.flags %}<code class="{{ 'sev-error' if f in ('verification-failed', 'block-proposed') else 'sev-warning' if f in ('incomplete', 'removal-candidate') else '' }}">{{ f }}</code> {% else %}<span class="muted">awaiting verification</span>{% endfor %}</td>
-          <td class="sev-warning">{{ p.builds_not_ok|join(', ') }}</td></tr>
-      {% endfor %}
-    </table>
-    {% endif %}
+  {% if todo %}
+  <h2>Where to look</h2>
+  <table class="overview">
+    <tr><th>Status</th><th>Jira</th><th>Launchpad bug</th><th>Package</th><th>Main issue</th></tr>
+    {% for r in todo %}
+    <tr class="row lvl {{ r.level }}" data-level="{{ r.level }}">
+      <td class="lvlcell"><span class="badge lvl {{ r.level }}">{{ r.level }}</span></td>
+      <td class="nowrap"><a href="#card-{{ r.key }}">{{ r.key }}</a></td>
+      <td>
+        {% for bug in r.bugs %}<div>{{ link(bug.url, bug.label) }} {{ bug.short_title(70) }}</div>
+        {% else %}<span class="muted">{{ r.summary }}</span>{% endfor %}
+      </td>
+      <td class="nowrap">{% for bug in r.bugs %}<div><code>{{ bug.package or '?' }}</code></div>{% endfor %}</td>
+      <td>
+        {% for mi in main_issues(r) %}<div>{% if mi.label %}<b>{{ mi.label }}</b> {% endif %}{{ mi.text }}{% if mi.more %} <span class="more">(+{{ mi.more }} more)</span>{% endif %}</div>{% endfor %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
 
-    {% if bug.blockers %}
-    <h4>Blockers and concerns</h4>
-    <ul>
-      {% for b in bug.blockers %}
-      <li><span class="{{ 'sev-error' if b.severity == 'blocker' else 'sev-warning' }}">{{ b.severity }}</span>
-        {{ link(b.url, b.summary) }}{% if b.maybe_resolved %} <span class="muted">(possibly resolved later)</span>{% endif %}
-        <span class="muted">[{{ b.source }}]</span></li>
-      {% endfor %}
-    </ul>
-    {% endif %}
+  <h2>Details</h2>
+  <div class="toolbar"><button id="expand">Expand all</button><button id="collapse">Collapse all</button></div>
+  {% for r in todo %}
+  <details class="card lvl {{ r.level }}" id="card-{{ r.key }}" data-level="{{ r.level }}">
+    <summary>
+      <span class="badge lvl {{ r.level }}">{{ r.level }}</span>
+      <strong>{{ link(r.url, r.key) }}</strong>
+      <span>{{ r.summary }}</span>
+      <span class="muted">{{ r.status }}{% if r.assignee %} &middot; {{ r.assignee }}{% endif %}</span>
+    </summary>
+    <div class="body">
+      {% for bug in r.bugs %}
+      <section class="bug">
+        <h3>{{ link(bug.url, bug.label) }} &middot; <span class="pkg">{{ bug.package or '?' }}</span> &middot; {{ bug.title }}</h3>
+        {% if bug.error %}<p class="sev-error">{{ bug.error }}</p>{% endif %}
 
-    {% for kind, artifacts in (('Patches', bug.patches), ('Merge proposals', bug.merge_proposals)) %}
-    {% if artifacts %}<h4>{{ kind }}</h4>
-    {% for a in artifacts %}
-      <div>
-        {{ link(a.web_url, a.title if a.title is defined else a.web_url) }}
-        {% if a.series is string %}{% if a.series %}<code>{{ a.series }}</code>{% endif %}
-        {% else %}{% for s in a.series %}<code>{{ s }}</code> {% endfor %}{% endif %}
-        {% if a.status is defined %}<span class="muted">{{ a.status }}{% if a.votes %} &middot; {{ a.votes|join(', ') }}{% endif %}</span>{% endif %}
-        {% if a.lint is none %}<span class="muted">not linted</span>
-        {% elif not a.lint.ran %}<span class="sev-error">sru-lint failed: {{ a.lint.error }}</span>
-        {% elif not a.lint.findings %}<span class="fixed">sru-lint: clean</span>
-        {% else %}
+        <h4>Issues</h4>
+        <ul class="findings">
+          {% for f in bug.findings %}<li class="lvl {{ f.level }}">{{ link(f.url, f.text) }}</li>{% endfor %}
+        </ul>
+
+        {% set rows = series_rows(bug) %}
+        {% if rows %}
+        <h4>Series</h4>
         <table>
-          {% for f in a.lint.findings %}
-          <tr><td class="sev-{{ f.severity }}">{{ f.severity }}</td><td>{{ f.rule_id }}</td>
-              <td>{{ link(f.doc_url, f.message) }}</td><td class="muted">{{ f.path }}{% if f.line %}:{{ f.line }}{% endif %}</td></tr>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          {% for s in rows %}
+          <tr>
+            <td>{{ link(s.url, s.series) }}</td>
+            <td class="{{ 'st-fixed' if s.state == 'fixed' else 'st-pending' if s.state == 'pending' else 'st-muted' }}">{{ s.status }}{% if s.state == 'eol' %} (EOL){% endif %}</td>
+            <td>
+              {% if s.proposed %}{{ s.proposed.version }}{% if s.proposed.days is not none %} <span class="muted">&middot; {{ s.proposed.days }} d</span>{% endif %}<br>
+                {% for f in s.proposed.flags %}<span class="flag {{ 'bad' if f in ('verification-failed', 'block-proposed') else 'warn' if f in ('incomplete', 'removal-candidate') else 'good' if f == 'verified' else '' }}">{{ f }}</span>{% else %}<span class="muted">awaiting verification</span>{% endfor %}
+              {% else %}<span class="muted">&ndash;</span>{% endif %}
+            </td>
+            <td>{% for a in s.artifacts %}<div>{{ a }}</div>{% else %}<span class="muted">&ndash;</span>{% endfor %}</td>
+          </tr>
           {% endfor %}
         </table>
         {% endif %}
-      </div>
-    {% endfor %}{% endif %}
+
+        {% if bug.patches or bug.merge_proposals %}
+        <h4>sru-lint</h4>
+        {% for a in artifacts(bug) %}
+        {% set lint = a.lint %}
+        <details class="artifact">
+          <summary>
+            {{ link(a.url, a.name) }}
+            {% for s in a.series %}<code>{{ s }}</code> {% endfor %}
+            {% if a.note %}<span class="muted">{{ a.note }}</span>{% endif %}
+            {% if lint is none %}<span class="muted">not linted</span>
+            {% elif not lint.ran %}<span class="pill error">failed</span>
+            {% elif not lint.findings %}<span class="pill ok">clean</span>
+            {% else %}
+              {% for sev in ('error', 'warning', 'info') %}{% if lint.count(sev) %}<span class="pill {{ sev }}">{{ lint.count(sev) }} {{ sev }}</span>{% endif %}{% endfor %}
+            {% endif %}
+          </summary>
+          {% if lint is not none and not lint.ran %}<p class="sev-error">{{ lint.error }}</p>{% endif %}
+          {% if lint is not none and lint.findings %}
+          <table class="lint">
+            {% for f in a.findings %}
+            <tr><td class="sev-{{ f.severity }}">{{ f.severity }}</td><td>{{ f.rule_id }}</td>
+                <td>{{ link(f.doc_url, f.message) }}</td><td class="muted">{{ f.path }}{% if f.line %}:{{ f.line }}{% endif %}</td></tr>
+            {% endfor %}
+          </table>
+          {% endif %}
+        </details>
+        {% endfor %}
+        {% endif %}
+      </section>
+      {% else %}
+      <p class="muted">No Launchpad bug found in this card.</p>
+      {% endfor %}
+    </div>
+  </details>
+  {% endfor %}
+  {% endif %}
+
+  {% if finished %}
+  <h2 data-level="done" class="doneh">Done ({{ finished|length }})</h2>
+  <ul class="done-list" data-level="done">
+    {% for r in finished %}<li>{{ link(r.url, r.key) }} &middot;
+      {% for bug in r.bugs %}{{ link(bug.url, bug.label) }} <code>{{ bug.package or '?' }}</code> {{ bug.short_title(50) }}{% if not loop.last %}, {% endif %}{% endfor %}</li>
     {% endfor %}
-    {% endfor %}
-  </div>
-</details>
-{% endfor %}
+  </ul>
+  {% endif %}
+</main>
 
 <script>
-document.querySelectorAll('.filters button').forEach(function (btn) {
-  btn.addEventListener('click', function () {
-    document.querySelectorAll('.filters button').forEach(function (b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    document.querySelectorAll('.card').forEach(function (card) {
-      card.style.display = (btn.dataset.level === 'all' || card.dataset.level === btn.dataset.level) ? '' : 'none';
+(function () {
+  var tiles = document.querySelectorAll('.tile');
+  var items = document.querySelectorAll('[data-level]:not(.tile)');
+  tiles.forEach(function (tile) {
+    tile.addEventListener('click', function () {
+      tiles.forEach(function (t) { t.classList.remove('active'); });
+      tile.classList.add('active');
+      items.forEach(function (el) { el.hidden = !(tile.dataset.level === 'all' || el.dataset.level === tile.dataset.level); });
     });
   });
-});
+  function openFromHash() {
+    var el = location.hash && document.querySelector(location.hash);
+    if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); }
+  }
+  window.addEventListener('hashchange', openFromHash); openFromHash();
+  function setAll(open) { document.querySelectorAll('details.card').forEach(function (d) { d.open = open; }); }
+  var e = document.getElementById('expand'), c = document.getElementById('collapse');
+  if (e) { e.onclick = function () { setAll(true); }; c.onclick = function () { setAll(false); }; }
+})();
 </script>
 </body>
 </html>
