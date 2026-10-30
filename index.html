@@ -1,0 +1,3360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ubuntu Stable Release Updates</title>
+<style>
+  :root {
+    --aubergine: #2c001e; --orange: #e95420; --warm-grey: #aea79f; --light: #f7f7f7; --border: #d9d9d9;
+    --text: #111; --muted: #666;
+    --blocked: #c7162b; --engineer-attention: #e95420; --sponsor-attention: #772953;
+    --review: #f99b0f; --ready: #0e8420; --done: #8a8a8a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 "Ubuntu", "Ubuntu Sans", "Helvetica Neue", Arial, sans-serif; color: var(--text); background: #fff; }
+  a { color: #0066cc; text-decoration: none; } a:hover { text-decoration: underline; }
+  code { font-family: "Ubuntu Mono", "DejaVu Sans Mono", monospace; font-size: .85em; background: var(--light); padding: 0 .3em; border-radius: 2px; }
+  .muted { color: var(--muted); }
+
+  header.top { background: var(--aubergine); color: #fff; border-bottom: 4px solid var(--orange); }
+  header.top .inner { max-width: 1200px; margin: 0 auto; padding: 1.2rem 1.5rem; display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+  header.top h1 { margin: 0; font-size: 1.6rem; font-weight: 300; letter-spacing: .01em; }
+  header.top h1 b { font-weight: 500; }
+  header.top .meta { color: #d8c5cf; font-size: .85rem; margin-left: auto; }
+  main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+  h2 { font-size: 1.15rem; font-weight: 400; margin: 2rem 0 .6rem; padding-bottom: .3rem; border-bottom: 1px solid var(--border); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .5rem; background: #fff; padding: .75rem 0; z-index: 2; }
+  @media (min-width: 900px) { .tiles { position: sticky; top: 0; } }
+  .tile { border: 1px solid var(--border); border-top: 4px solid var(--c, var(--warm-grey)); background: #fff; padding: .3rem .8rem; text-align: left; cursor: pointer; font: inherit; border-radius: 2px; }
+  .tile:hover, .tile.active { background: var(--light); box-shadow: inset 0 0 0 1px var(--c, var(--warm-grey)); }
+  .tile .n { font-size: 1.4rem; font-weight: 300; line-height: 1.1; display: block; }
+  .tile .l { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+
+  .lvl { --c: var(--done); } .lvl.blocked { --c: var(--blocked); }
+  .lvl.engineer-attention { --c: var(--engineer-attention); } .lvl.sponsor-attention { --c: var(--sponsor-attention); }
+  .lvl.review { --c: var(--review); } .lvl.ready { --c: var(--ready); } .lvl.done { --c: var(--done); }
+  .tile.blocked { --c: var(--blocked); } .tile.engineer-attention { --c: var(--engineer-attention); }
+  .tile.sponsor-attention { --c: var(--sponsor-attention); } .tile.review { --c: var(--review); }
+  .tile.ready { --c: var(--ready); } .tile.done { --c: var(--done); }
+  .badge { display: inline-block; min-width: 5.6rem; text-align: center; font-size: .7rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; padding: .1rem .5rem; color: #fff; background: var(--c); border-radius: 2px; }
+  .badge.review { color: #111; }
+
+  table { border-collapse: collapse; width: 100%; }
+  th { text-align: left; font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 2px solid var(--border); padding: .35rem .6rem; }
+  td { border-bottom: 1px solid var(--border); padding: .45rem .6rem; vertical-align: top; overflow-wrap: anywhere; }
+  td.nowrap { white-space: nowrap; overflow-wrap: normal; }
+  table.overview tr:hover td { background: var(--light); }
+  table.overview td.lvlcell { border-left: 4px solid var(--c); white-space: nowrap; }
+  .more { color: var(--muted); font-size: .85rem; }
+
+  details.card { border: 1px solid var(--border); border-left: 4px solid var(--c); margin: .6rem 0; border-radius: 2px; }
+  details.card > summary { padding: .6rem .9rem; cursor: pointer; display: flex; gap: .75rem; align-items: baseline; flex-wrap: wrap; list-style: none; }
+  details.card > summary::-webkit-details-marker { display: none; }
+  details.card > summary::before { content: "\25B8"; color: var(--muted); }
+  details.card[open] > summary::before { content: "\25BE"; }
+  details.card[open] > summary { background: var(--light); }
+  .card .body { padding: .25rem 1rem 1rem; }
+  .bug h3 { font-size: 1.05rem; font-weight: 400; margin: 1rem 0 .4rem; }
+  .bug h3 .pkg { font-weight: 500; }
+  .bug h4 { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 1rem 0 .3rem; }
+
+  ul.findings { list-style: none; margin: 0; padding: 0; }
+  ul.findings li { padding: .25rem 0 .25rem 1.4rem; position: relative; overflow-wrap: anywhere; }
+  ul.findings li::before { content: ""; position: absolute; left: .3rem; top: .75rem; width: .6rem; height: .6rem; border-radius: 50%; background: var(--c); }
+  ul.findings li.ready::before, ul.findings li.done::before { background: transparent; border: 2px solid var(--c); }
+  ul.findings a { color: inherit; border-bottom: 1px dotted var(--muted); } ul.findings a:hover { text-decoration: none; border-bottom-style: solid; }
+  ul.findings li.ready, ul.findings li.done { color: var(--muted); }
+
+  .chip { display: inline-block; font-size: .8rem; padding: 0 .5rem; border-radius: 10px; background: var(--light); border: 1px solid var(--border); margin-right: .25rem; }
+  .st-fixed { color: var(--ready); font-weight: 500; } .st-pending { color: #b34700; font-weight: 500; } .st-muted { color: var(--muted); }
+  .flag { font-size: .75rem; padding: 0 .4rem; border-radius: 2px; background: var(--light); border: 1px solid var(--border); margin-right: .2rem; }
+  .flag.bad { background: #fbe9eb; border-color: var(--blocked); color: var(--blocked); }
+  .flag.warn { background: #fdeee8; border-color: var(--orange); color: #b34700; }
+  .flag.good { background: #e8f3ea; border-color: var(--ready); color: var(--ready); }
+
+  .artifact { margin: .35rem 0; }
+  .artifact summary { cursor: pointer; }
+  .pill { font-size: .75rem; font-weight: 500; padding: 0 .45rem; border-radius: 10px; color: #fff; margin-left: .25rem; }
+  .pill.error { background: var(--blocked); } .pill.warning { background: var(--review); color: #111; } .pill.info { background: var(--warm-grey); }
+  .pill.ok { background: var(--ready); }
+  table.lint { margin: .3rem 0 .6rem 1rem; width: calc(100% - 1rem); font-size: .9rem; }
+  .sev-error { color: var(--blocked); font-weight: 500; } .sev-warning { color: #b34700; } .sev-info { color: var(--muted); }
+
+  .done-list { columns: 2; column-gap: 2rem; font-size: .9rem; list-style: none; padding: 0; }
+  .done-list li { break-inside: avoid; padding: .15rem 0; }
+  .toolbar { display: flex; justify-content: flex-end; gap: .5rem; margin: .5rem 0; }
+  .toolbar button { font: inherit; font-size: .85rem; padding: .2rem .8rem; border: 1px solid var(--border); background: #fff; border-radius: 2px; cursor: pointer; }
+  .toolbar button:hover { background: var(--light); }
+  [hidden] { display: none !important; }
+  @media (max-width: 700px) { .done-list { columns: 1; } }
+</style>
+</head>
+<body>
+
+
+<header class="top"><div class="inner">
+  <h1><b>SRU</b> review</h1>
+  <span class="muted" style="color:#d8c5cf">Ubuntu Stable Release Updates</span>
+  <span class="meta">Generated 2026-10-30 17:22 UTC &middot; 34 card(s)</span>
+</div></header>
+
+<main>
+  <div class="tiles" role="toolbar" aria-label="Filter by status">
+    <button class="tile active" data-level="all" style="--c: var(--aubergine)"><span class="n">34</span><span class="l">All cards</span></button>
+    
+    <button class="tile blocked" data-level="blocked"><span class="n">14</span><span class="l">Blocked</span></button>
+    
+    <button class="tile engineer-attention" data-level="engineer-attention"><span class="n">13</span><span class="l">Engineer attention</span></button>
+    
+    <button class="tile sponsor-attention" data-level="sponsor-attention"><span class="n">1</span><span class="l">Sponsor attention</span></button>
+    
+    <button class="tile review" data-level="review"><span class="n">0</span><span class="l">To review</span></button>
+    
+    <button class="tile ready" data-level="ready"><span class="n">0</span><span class="l">Ready</span></button>
+    
+    <button class="tile done" data-level="done"><span class="n">6</span><span class="l">Done</span></button>
+    
+  </div>
+
+  
+  <h2>Where to look</h2>
+  <table class="overview">
+    <tr><th>Status</th><th>Jira</th><th>Launchpad bug</th><th>Package</th><th>Main issue</th></tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4091">SI-4091</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2131181">LP: #2131181</a> Loading certificate with --import enrolls it into the platform keyrin…</div>
+        
+      </td>
+      <td class="nowrap"><div><code>linux, mokutil</code></div></td>
+      <td>
+        <div>Verification failure reported: &#34;…verification-needed-resolute-linux&#39; to &#39;verification-failed-resolute-linux&#39;. If verification is not done by 5 working days fro… <span class="more">(+4 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4376">SI-4376</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2144770">LP: #2144770</a> plymouth reload sometimes switches to text mode</div>
+        
+      </td>
+      <td class="nowrap"><div><code>plymouth</code></div></td>
+      <td>
+        <div>autopkgtest failure/regression reported: &#34;…e StableReleaseUpdates policy regarding autopkgtest regressions [1]. https://ubuntu-archive-team.ubuntu.com/proposed… <span class="more">(+8 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4442">SI-4442</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2150130">LP: #2150130</a> --restart in ovn-controller leaves gateway ports active</div>
+        
+      </td>
+      <td class="nowrap"><div><code>ovn</code></div></td>
+      <td>
+        <div>The submitter found that the package in -proposed refreshes (clears) flows on upgrade, which means the LP: #1940043 upgrade regression is reintroduced. A new f… <span class="more">(+5 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4583">SI-4583</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2155998">LP: #2155998</a> Handle invalid grub config entries due to os-prober defaulting uniden…</div>
+        
+      </td>
+      <td class="nowrap"><div><code>os-prober</code></div></td>
+      <td>
+        <div>The reviewer wants the problem reproduced and understood from the boot side before accepting the patch. The original hanging-mount bug was reportedly resolved… <span class="more">(+4 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4771">SI-4771</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/1983499">LP: #1983499</a> [Rbd] rados_connect_timeout has no effect</div>
+        
+      </td>
+      <td class="nowrap"><div><code>python-glance-store</code></div></td>
+      <td>
+        <div>The backported change alters the meaning of rados_connect_timeout: 0 now means no timeout, where it used to mean use the default. Deployments such as the glanc… <span class="more">(+4 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4814">SI-4814</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2144550">LP: #2144550</a> [SRU] Create image from volume fails due to properties key being empty</div>
+        
+      </td>
+      <td class="nowrap"><div><code>cinder</code></div></td>
+      <td>
+        <div>seyeongkim voted &#39;Disapprove&#39; <span class="more">(+7 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4855">SI-4855</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2165345">LP: #2165345</a> [SRU] Allow 4k aligned IO for windows guests</div>
+        
+      </td>
+      <td class="nowrap"><div><code>cinder</code></div></td>
+      <td>
+        <div>The reviewer asked for exact reproduction commands, before/after output, libvirt XML snippets showing the block size, and expected performance gain. There is n… <span class="more">(+13 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4864">SI-4864</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2161000">LP: #2161000</a> [SRU] Squid: Ceph new point release 19.2.6</div>
+        
+      </td>
+      <td class="nowrap"><div><code>ceph</code></div></td>
+      <td>
+        <div>ceph 19.2.6-0ubuntu0.24.04.1 in noble-proposed, 63 days: tagged block-proposed, double-check before release <span class="more">(+12 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4978">SI-4978</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2167545">LP: #2167545</a> Pin goroutine to OS thread when reading the primary key</div>
+        
+      </td>
+      <td class="nowrap"><div><code>nullboot</code></div></td>
+      <td>
+        <div>The nullboot maintainers (juliank) object to this individual patch upload by non-boot people. They plan to ship it in a 0.6.1 release (possibly a 0.5.4 for old… <span class="more">(+5 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-4984">SI-4984</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2167730">LP: #2167730</a> [SRU] Add libmpdec-dev to noble</div>
+        
+      </td>
+      <td class="nowrap"><div><code>mpdecimal</code></div></td>
+      <td>
+        <div>The SRU justification is unclear. The only stated use is for people building CPython &gt;= 3.16 from source, and no archive package in noble needs libmpdec-dev. S… <span class="more">(+4 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-5055">SI-5055</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2168803">LP: #2168803</a> QEMU 8.2.2 guests crash by exhausting vm.max_map_count with coroutines</div>
+        
+      </td>
+      <td class="nowrap"><div><code>qemu</code></div></td>
+      <td>
+        <div>The backported patches parse /proc/sys/vm/max_map_count incorrectly, so the default value is always used and the system limit is never taken into account. The… <span class="more">(+9 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-5066">SI-5066</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2061701">LP: #2061701</a> [SRU] check_can_live_migrate_source fails with mkfs.vfat error: Label…</div>
+        
+      </td>
+      <td class="nowrap"><div><code>nova</code></div></td>
+      <td>
+        <div>autopkgtest failure/regression reported: &#34;…e StableReleaseUpdates policy regarding autopkgtest regressions [1]. https://ubuntu-archive-team.ubuntu.com/proposed… <span class="more">(+6 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-5128">SI-5128</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2169074">LP: #2169074</a> Adsys is case sensitive when querying registery \SOFTWARE\Policies\Mi…</div>
+        
+      </td>
+      <td class="nowrap"><div><code>adsys</code></div></td>
+      <td>
+        <div>The bug description has no SRU template (Impact, Test Plan, Where problems could occur, regression potential), and no later comment adds one. An SRU upload to… <span class="more">(+4 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">blocked</span></td>
+      <td class="nowrap"><a href="#card-SI-5142">SI-5142</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2161211">LP: #2161211</a> ceph-osd crashes due to a data race</div>
+        
+      </td>
+      <td class="nowrap"><div><code>ceph</code></div></td>
+      <td>
+        <div>The bug has no SRU template (impact, test plan, regression potential, where problems could occur). The crash is intermittent and the report gives no reproducer… <span class="more">(+5 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-3048">SI-3048</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2069442">LP: #2069442</a> Deleting a VM may produce a traceback because of a race</div>
+        
+      </td>
+      <td class="nowrap"><div><code>neutron</code></div></td>
+      <td>
+        <div>SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete <span class="more">(+1 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-3094">SI-3094</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/1982287">LP: #1982287</a> [rfe][ovn] Support address group for ovn driver</div>
+        
+      </td>
+      <td class="nowrap"><div><code>?</code></div></td>
+      <td>
+        <div>Bug has no Ubuntu package tasks <span class="more">(+6 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-3665">SI-3665</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2121543">LP: #2121543</a> [SRU] Poor performance of libnss-db on large db files</div>
+        
+      </td>
+      <td class="nowrap"><div><code>libnss-db</code></div></td>
+      <td>
+        <div>No patch/MP identified for: jammy, noble, resolute <span class="more">(+4 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-3784">SI-3784</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2032817">LP: #2032817</a> [OVN] packet drops when provider network MTU exceeds tenant network M…</div>
+        
+      </td>
+      <td class="nowrap"><div><code>neutron</code></div></td>
+      <td>
+        <div>SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete <span class="more">(+5 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-4037">SI-4037</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2115795">LP: #2115795</a> UDP fragmented packets not passing through in DPDK when destination p…</div>
+        
+      </td>
+      <td class="nowrap"><div><code>ovn</code></div></td>
+      <td>
+        <div>SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete <span class="more">(+2 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-4064">SI-4064</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2116087">LP: #2116087</a> remote-managed vnic-type binding profile validation error</div>
+        
+      </td>
+      <td class="nowrap"><div><code>neutron</code></div></td>
+      <td>
+        <div>SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete <span class="more">(+2 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-4434">SI-4434</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2148509">LP: #2148509</a> [SRU] Neutron stable point releases</div>
+        
+      </td>
+      <td class="nowrap"><div><code>neutron</code></div></td>
+      <td>
+        <div>SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete <span class="more">(+6 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-4683">SI-4683</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2159858">LP: #2159858</a> landscape-client registration fails against servers with large number…</div>
+        
+      </td>
+      <td class="nowrap"><div><code>?</code></div></td>
+      <td>
+        <div>Bug has no Ubuntu package tasks <span class="more">(+2 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-4950">SI-4950</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2167098">LP: #2167098</a> IPv4 route MTUs silently dropped after networkd restart / networkctl…</div>
+        
+      </td>
+      <td class="nowrap"><div><code>systemd</code></div></td>
+      <td>
+        <div>enr0n voted &#39;Needs Fixing&#39; <span class="more">(+6 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-5005">SI-5005</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2167891">LP: #2167891</a> &#34;Host memory error&#34; when using tpm with wpa_supplicant</div>
+        
+      </td>
+      <td class="nowrap"><div><code>tpm2-pkcs11</code></div></td>
+      <td>
+        <div>The [Where problems could occur] section appears to have been updated only after a reviewer asked for more detail. The first revision left it empty, so the fin… <span class="more">(+3 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-5063">SI-5063</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2169162">LP: #2169162</a> sssd-kcm fails to start due to use-after-free with krb5_renew_interval</div>
+        
+      </td>
+      <td class="nowrap"><div><code>sssd</code></div></td>
+      <td>
+        <div>sru-lint: 1 error(s) in lp2169162_stonking.debdiff <span class="more">(+6 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-5074">SI-5074</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/1452641">LP: #1452641</a> Static Ceph mon IP addresses in connection_info can prevent VM startup</div>
+        
+      </td>
+      <td class="nowrap"><div><code>nova</code></div></td>
+      <td>
+        <div>SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete <span class="more">(+1 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl engineer-attention" data-level="engineer-attention">
+      <td class="lvlcell"><span class="badge lvl engineer-attention">engineer-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-5110">SI-5110</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/1672522">LP: #1672522</a> The python-openvswitch package should build the json C extension</div>
+        
+      </td>
+      <td class="nowrap"><div><code>openvswitch</code></div></td>
+      <td>
+        <div>The bug has no visible SRU template (impact, test plan, where problems could occur, regression potential). The only test-plan artifact is a benchmark script at… <span class="more">(+3 more)</span></div>
+      </td>
+    </tr>
+    
+    <tr class="row lvl sponsor-attention" data-level="sponsor-attention">
+      <td class="lvlcell"><span class="badge lvl sponsor-attention">sponsor-attention</span></td>
+      <td class="nowrap"><a href="#card-SI-5015">SI-5015</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2085314">LP: #2085314</a> systemd-networkd segfault (question #819069)</div>
+        
+      </td>
+      <td class="nowrap"><div><code>systemd</code></div></td>
+      <td>
+        <div>Ready for a sponsor to review and upload: noble <span class="more">(+2 more)</span></div>
+      </td>
+    </tr>
+    
+  </table>
+
+  <h2>Details</h2>
+  <div class="toolbar"><button id="expand">Expand all</button><button id="collapse">Collapse all</button></div>
+  
+  <details class="card lvl blocked" id="card-SI-4091" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4091">SI-4091</a></strong>
+      <span>LP 2131181 (linux)</span>
+      <span class="muted">Needs Sponsorship Review &middot; Dean Marx</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2131181">LP: #2131181</a> &middot; <span class="pkg">linux, mokutil</span> &middot; Loading certificate with --import enrolls it into the platform keyring instead of the machine keyring</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/mokutil/+bug/2131181/comments/6">Verification failure reported: &#34;…verification-needed-resolute-linux&#39; to &#39;verification-failed-resolute-linux&#39;. If verification is not done by 5 working days from today,…&#34; (ubuntu-kernel-bot)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2131181">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2131181">No patches or merge proposals found for the pending series</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2131181">Development release is not fixed yet</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/ubuntu/+source/mokutil/+bug/2131181/comments/1">1 earlier concern(s) in comments look resolved by later comments; skim to confirm</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/linux/+bug/2131181">devel</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/mokutil/+bug/2131181">devel</a></td>
+            <td class="st-muted">Invalid</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/linux/+bug/2131181">jammy</a></td>
+            <td class="st-muted">Won&#39;t Fix</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/linux/+bug/2131181">noble</a></td>
+            <td class="st-fixed">Fix Committed</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/linux/+bug/2131181">resolute</a></td>
+            <td class="st-fixed">Fix Committed</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/linux/+bug/2131181">stonking</a></td>
+            <td class="st-fixed">Fix Committed</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/mokutil/+bug/2131181">stonking</a></td>
+            <td class="st-muted">Invalid</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-4376" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4376">SI-4376</a></strong>
+      <span>LP 2144770 (plymouth)</span>
+      <span class="muted">Needs Verification &middot; Dariusz Gadomski</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2144770">LP: #2144770</a> &middot; <span class="pkg">plymouth</span> &middot; plymouth reload sometimes switches to text mode</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/2144770/comments/10">autopkgtest failure/regression reported: &#34;…e StableReleaseUpdates policy regarding autopkgtest regressions [1]. https://ubuntu-archive-team.ubuntu.com/proposed-migration/noble/updat…&#34; (ubuntu-sru-bot)</a></li><li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/2144770/comments/11">autopkgtest failure/regression reported: &#34;…e StableReleaseUpdates policy regarding autopkgtest regressions [1]. https://ubuntu-archive-team.ubuntu.com/proposed-migration/resolute/up…&#34; (ubuntu-sru-bot)</a></li><li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/2144770/comments/12">autopkgtest failure/regression reported: &#34;…s blocking another plymouth SRU[1]. The autopkgtest regressions from the comments above are green now. 1. https://bugs.launchpad.net/ubu…&#34; (ahasenack)</a></li><li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/2144770/comments/12">Neither noble nor resolute has any verification-done comment: both tags are still verification-needed, there are no test results for the -proposed packages, and the unverified SRU is now blocking another plymouth SRU (LP: #2167376).</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/2144770/comments/3">Reviewer requests changes: &#34;…Hi, I have uploaded to stonking, please fix MPs for resolute and noble. Best Regards, Vladimir.…&#34; (vpa1977)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/2144770/comments/7">The upstream merge request has not been merged after about 6 months and may need a rebase, so the SRU carries a downstream-only patch that could diverge from whatever upstream eventually accepts.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/2144770/comments/6">The reporter suspected the stonking fix had introduced a boot problem, then retracted this after seeing the same problem in 0ubuntu8. The cause was never identified beyond &#39;hardware-specific&#39;, so the regression risk of the patch on real hardware is not fully ruled out.</a></li><li class="lvl ready"><a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html#noble">plymouth 24.004.60-1ubuntu7.3 in noble-proposed, 22 days: awaiting verification</a></li><li class="lvl ready"><a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html#resolute">plymouth 24.004.60+git20250831.4a3c171d-0ubuntu8.1 in resolute-proposed, 22 days: awaiting verification</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/plymouth/+bug/2144770">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/plymouth/+bug/2144770">noble</a></td>
+            <td class="st-fixed">Fix Committed</td>
+            <td>
+              24.004.60-1ubuntu7.3 <span class="muted">&middot; 22 d</span><br>
+                <span class="muted">awaiting verification</span>
+              
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/questing/+source/plymouth/+bug/2144770">questing</a></td>
+            <td class="st-muted">Won&#39;t Fix (EOL)</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/plymouth/+bug/2144770">resolute</a></td>
+            <td class="st-fixed">Fix Committed</td>
+            <td>
+              24.004.60+git20250831.4a3c171d-0ubuntu8.1 <span class="muted">&middot; 22 d</span><br>
+                <span class="muted">awaiting verification</span>
+              
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/plymouth/+bug/2144770">stonking</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-4442" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4442">SI-4442</a></strong>
+      <span>LP 2150130 (cloud-archive/ovn)</span>
+      <span class="muted">Needs Verification &middot; Arif Ali</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2150130">LP: #2150130</a> &middot; <span class="pkg">ovn</span> &middot; --restart in ovn-controller leaves gateway ports active</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/ovn/+bug/2150130/comments/7">The submitter found that the package in -proposed refreshes (clears) flows on upgrade, which means the LP: #1940043 upgrade regression is reintroduced. A new fix is promised but not yet delivered, so the current jammy-proposed upload cannot be verified or released.</a></li><li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/ovn/+bug/2150130/comments/5">No verification-done has been recorded for jammy or yoga. The tags are still verification-needed-jammy and verification-yoga-needed, and no testing details have been posted for the proposed packages.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ovn/+bug/2150130/comments/1">The reviewer&#39;s requested SRU template revisions are not shown as addressed: the Impact statement, a test case for the preinstall/upgrade path, and the Where-problems section on how the LP: #1940043 regression is avoided. The template also should state that Lunar and later already carry this change.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ovn/+bug/2150130/comments/4">The SRU reviewer warned that testing must be careful so that the upgrade regression from LP: #1940043 is not reintroduced. The proposed package apparently fails this, which shows the upgrade test is needed and must be run explicitly on any replacement upload.</a></li><li class="lvl review"><a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html#jammy">ovn 22.03.8-0ubuntu0.22.04.2 in jammy-proposed, 62 days: new comments since it was accepted in -proposed</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/ubuntu/+source/ovn/+bug/2150130/comments/1">1 earlier concern(s) in comments look resolved by later comments; skim to confirm</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/ovn/+bug/2150130">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/ovn/+bug/2150130">jammy</a></td>
+            <td class="st-fixed">Fix Committed</td>
+            <td>
+              22.03.8-0ubuntu0.22.04.2 <span class="muted">&middot; 62 d</span><br>
+                <span class="flag ">messages</span>
+              
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-4583" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4583">SI-4583</a></strong>
+      <span>LP 2155998 (os-prober)</span>
+      <span class="muted">BLOCKED &middot; Bhavya Dokuru</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2155998">LP: #2155998</a> &middot; <span class="pkg">os-prober</span> &middot; Handle invalid grub config entries due to os-prober defaulting unidentified file system types</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/os-prober/+bug/2155998/comments/2">The reviewer wants the problem reproduced and understood from the boot side before accepting the patch. The original hanging-mount bug was reportedly resolved separately using mount namespaces, so it is unclear whether this change is still needed or correct.</a></li><li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/os-prober/+bug/2155998/comments/2">The regression-potential section is inaccurate. It says os-prober is disabled by default, but it is enabled automatically when other OSes are detected at install time. The section also does not analyse what the fuseblk fallback path does, so removing it blindly could break detection of real filesystems that grub-probe does not recognise.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/os-prober/+bug/2155998/comments/0">The test plan only covers the LVM snapshot case. It has no check that other unidentified filesystems, such as NTFS or fuseblk-type ones, are still detected, and it does not confirm that the fix leaves no hanging mounts. The &#39;after&#39; results with the patched package are not shown.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/os-prober/+bug/2155998/comments/0">The plan to backport the latest os-prober to Noble and Jammy after this SRU is vague. Each series needs its own bug and test coverage, and the fix may interact differently with the older mount handling there.</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2155998">Development release is not fixed yet</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/os-prober/+bug/2155998">devel</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/os-prober/+bug/2155998">jammy</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/os-prober/+bug/2155998">noble</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/os-prober/+bug/2155998">resolute</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2155998/+attachment/5976284">lp2155998.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-4771" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4771">SI-4771</a></strong>
+      <span>LP 1983499 (cloud-archive/glance-store/python-glance-store)</span>
+      <span class="muted">Reviewed Pending Acceptance &middot; Arif Ali</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/1983499">LP: #1983499</a> &middot; <span class="pkg">python-glance-store</span> &middot; [Rbd] rados_connect_timeout has no effect</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/glance-store/+bug/1983499/comments/6">The backported change alters the meaning of rados_connect_timeout: 0 now means no timeout, where it used to mean use the default. Deployments such as the glance charm, which sets 0, could hang indefinitely on connect after the update. This regression risk is unaddressed in the SRU, with no mitigation or upgrade note.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/glance-store/+bug/1983499/comments/7">The [Impact] section of the SRU description is unclear about what is being fixed and why. The reviewer asked for it to be improved.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/glance-store/+bug/1983499/comments/7">The test plan is confusing and inconsistent. It sets up ceph and ceph-rgw backends, then disables the cinder default backend, without stating the expected outcome, namely that the timeout is honored and another backend is selected. It needs rewriting so it can be verified.</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~arif-ali/ubuntu/+source/python-glance-store/+git/python-glance-store/+merge/509328/comments/1393404">The upload was approved and made before the reviewer&#39;s questions about the behavior change, the Impact section and the test plan were answered. The only testing shown is autopkgtests from a PPA build, and no verification of the actual timeout behavior has been documented.</a></li><li class="lvl review"><a href="https://code.launchpad.net/~arif-ali/ubuntu/+source/python-glance-store/+git/python-glance-store/+merge/509328">sru-lint: 1 warning(s) in merge proposal 509328 (ubuntu/jammy-devel)</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/python-glance-store/+bug/1983499">jammy</a></td>
+            <td class="st-pending">Incomplete</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~arif-ali/ubuntu/+source/python-glance-store/+git/python-glance-store/+merge/509328">MP refs/heads/lp1983499 → refs/heads/ubuntu/jammy-devel</a>
+            <code>jammy</code> 
+            <span class="muted">Needs review · dgadomski: Approve</span>
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/jammy/+queue?queue_state=1&amp;queue_text=python-glance-store">Package &#39;python-glance-store&#39; version &#39;3.0.0-0ubuntu1.5&#39; is already in upload queue for jammy/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-4814" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4814">SI-4814</a></strong>
+      <span>LP 2144550 (cinder/cloud-archive)</span>
+      <span class="muted">Reviewed Pending Acceptance &middot; Taichi Maeda</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2144550">LP: #2144550</a> &middot; <span class="pkg">cinder</span> &middot; [SRU] Create image from volume fails due to properties key being empty</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://code.launchpad.net/~al3jandrosg/ubuntu/+source/cinder/+git/cinder/+merge/512069/comments/1397667">seyeongkim voted &#39;Disapprove&#39;</a></li><li class="lvl blocked"><a href="https://code.launchpad.net/~al3jandrosg/ubuntu/+source/cinder/+git/cinder/+merge/512066/comments/1397668">Packages were uploaded for Jammy, Noble and Resolute, but the bug has no tags and no comment showing verification of the -proposed packages (no verification-done tags). The fix cannot be released to -updates until verification is recorded.</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~al3jandrosg/ubuntu/+source/cinder/+git/cinder/+merge/512069">sru-lint: 1 error(s) in merge proposal 512069 (ubuntu/resolute-devel)</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~al3jandrosg/ubuntu/+source/cinder/+git/cinder/+merge/512068">sru-lint: 1 error(s) in merge proposal 512068 (ubuntu/jammy-devel)</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~al3jandrosg/ubuntu/+source/cinder/+git/cinder/+merge/512066">sru-lint: 1 error(s) in merge proposal 512066 (ubuntu/noble-devel)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/cinder/+bug/2144550/comments/14">A reviewer asked for the Test Plan to state the volume_image_metadata contents, because the bug may not trigger depending on what the volume inherits from its Glance image. No reply or update followed, so the reproducer may not be reliable for verification.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/cinder/+bug/2144550/comments/0">The bug text is only the upstream description. No SRU template (Impact, Test Plan, Where problems could occur) is visible, which an SRU needs.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/cinder/+bug/2144550/comments/13">Upstream backports exist only for stable/2026.1, 2025.2 and 2025.1. Noble ships 24.2.0 and Jammy ships 20.3.1, and the bug was marked Won&#39;t Fix for an EOL series, so the patch for those releases is a downstream backport with no upstream stable review. It should be checked that it applies cleanly and is tested there.</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/cinder/+bug/2144550">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/cinder/+bug/2144550">jammy</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/cinder/+bug/2144550">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/cinder/+bug/2144550">resolute</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~al3jandrosg/ubuntu/+source/cinder/+git/cinder/+merge/512069">MP refs/heads/ubuntu/fix-lp2144550-resolute → refs/heads/ubuntu/resolute-devel</a>
+            <code>resolute</code> 
+            <span class="muted">Needs review · seyeongkim: Disapprove</span>
+            
+              <span class="pill error">1 error</span><span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>CHANGELOG005</td>
+                <td><a href="https://documentation.ubuntu.com/project/contributors/patching/make-changes-to-a-package/#updating-the-changelog">Trailing whitespace error: d/changelog:3</a></td><td class="muted">debian/changelog:3</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/resolute/+queue?queue_state=1&amp;queue_text=cinder">Package &#39;cinder&#39; version &#39;2:28.0.0-0ubuntu1.1&#39; is already in upload queue for resolute/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~al3jandrosg/ubuntu/+source/cinder/+git/cinder/+merge/512068">MP refs/heads/fix-lp2144550-jammy → refs/heads/ubuntu/jammy-devel</a>
+            <code>jammy</code> 
+            <span class="muted">Needs review · seyeongkim: Disapprove</span>
+            
+              <span class="pill error">1 error</span><span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>CHANGELOG005</td>
+                <td><a href="https://documentation.ubuntu.com/project/contributors/patching/make-changes-to-a-package/#updating-the-changelog">Trailing whitespace error: d/changelog:3</a></td><td class="muted">debian/changelog:3</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/jammy/+queue?queue_state=1&amp;queue_text=cinder">Package &#39;cinder&#39; version &#39;2:20.3.1-0ubuntu1.7&#39; is already in upload queue for jammy/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~al3jandrosg/ubuntu/+source/cinder/+git/cinder/+merge/512066">MP refs/heads/fix-lp2144550-noble → refs/heads/ubuntu/noble-devel</a>
+            <code>noble</code> 
+            <span class="muted">Needs review · seyeongkim: Disapprove</span>
+            
+              <span class="pill error">1 error</span><span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>CHANGELOG005</td>
+                <td><a href="https://documentation.ubuntu.com/project/contributors/patching/make-changes-to-a-package/#updating-the-changelog">Trailing whitespace error: d/changelog:3</a></td><td class="muted">debian/changelog:3</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble/+queue?queue_state=1&amp;queue_text=cinder">Package &#39;cinder&#39; version &#39;2:24.2.0-0ubuntu2.2&#39; is already in upload queue for noble/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-4855" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4855">SI-4855</a></strong>
+      <span>LP 2165345 (cloud-archive/cinder)</span>
+      <span class="muted">Reviewed Pending Acceptance &middot; Zachary M Raines</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2165345">LP: #2165345</a> &middot; <span class="pkg">cinder</span> &middot; [SRU] Allow 4k aligned IO for windows guests</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/cinder/+bug/2165345/comments/5">The reviewer asked for exact reproduction commands, before/after output, libvirt XML snippets showing the block size, and expected performance gain. There is no reply, and the Test Plan is still three vague steps with no concrete verification.</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510358">sru-lint: 1 error(s) in merge proposal 510358 (stable/yoga)</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510354">sru-lint: 1 error(s) in merge proposal 510354 (stable/2024.1)</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510353">sru-lint: 4 error(s) in merge proposal 510353 (stable/2024.2)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/cinder/+bug/2165345/comments/5">Reviewer requests changes: &#34;…@raineszm Could you please add detailed reproduction steps to the Test Plan, along with the results before and…&#34; (seyeongkim)</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510358/comments/1396440">seyeongkim voted &#39;Needs Fixing&#39;</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/cinder/+bug/2165345/comments/3">No verification feedback is recorded for the PPA test packages on any release (jammy through flamingo). The packages were uploaded to the unapproved queue without evidence that the disk_geometry behaviour was tested.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/cinder/+bug/2165345/comments/1">SRU policy requires the fix to be in the development release first. The thread never confirms this, and it never says whether the Nova side must also support the hinted block size. It also does not say whether Dalmatian is still a supported series.</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2165345">Development release is not fixed yet</a></li><li class="lvl review"><a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510357">sru-lint: 1 warning(s) in merge proposal 510357 (stable/zed)</a></li><li class="lvl review"><a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510356">sru-lint: 1 warning(s) in merge proposal 510356 (stable/2023.1)</a></li><li class="lvl review"><a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510355">sru-lint: 1 warning(s) in merge proposal 510355 (stable/2023.2)</a></li><li class="lvl review"><a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510352">sru-lint: 1 warning(s) in merge proposal 510352 (stable/2025.1)</a></li><li class="lvl review"><a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510351">sru-lint: 1 warning(s) in merge proposal 510351 (stable/2025.2)</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/cinder/+bug/2165345">devel</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/cinder/+bug/2165345">jammy</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/cinder/+bug/2165345">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510358">MP refs/heads/lp2165345/yoga → refs/heads/stable/yoga</a>
+            
+            <span class="muted">Needs review · seyeongkim: Approve</span>
+            
+              <span class="pill error">1 error</span><span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>CHANGELOG001</td>
+                <td><a href="https://documentation.ubuntu.com/project/release-team/list-of-releases/#list-of-releases">Invalid distribution &#39;UNRELEASED&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ004</td>
+                <td><a href="https://documentation.ubuntu.com/project/release-team/list-of-releases/#list-of-releases">Cannot check upload queue for UNRELEASED distribution for package &#39;cinder&#39; version &#39;2:20.3.1-0ubuntu1.7&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>CHANGELOG002</td>
+                <td>Bug LP: #2165345 is not targeted at cinder and UNRELEASED</td><td class="muted">debian/changelog:3</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510357">MP refs/heads/lp2165345/zed → refs/heads/stable/zed</a>
+            
+            <span class="muted">Needs review · seyeongkim: Approve</span>
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/jammy-zed/+queue?queue_state=1&amp;queue_text=cinder">Package &#39;cinder&#39; version &#39;2:21.3.1-0ubuntu1.1~cloud1&#39; is already in upload queue for jammy/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510356">MP refs/heads/lp2165345/antelope → refs/heads/stable/2023.1</a>
+            
+            <span class="muted">Needs review · seyeongkim: Approve</span>
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/jammy-antelope/+queue?queue_state=1&amp;queue_text=cinder">Package &#39;cinder&#39; version &#39;2:22.1.1-0ubuntu1.3~cloud4&#39; is already in upload queue for jammy/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510355">MP refs/heads/lp2165345/bobcat → refs/heads/stable/2023.2</a>
+            
+            <span class="muted">Needs review · seyeongkim: Approve</span>
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/jammy-bobcat/+queue?queue_state=1&amp;queue_text=cinder">Package &#39;cinder&#39; version &#39;2:23.0.0-0ubuntu1.4~cloud3&#39; is already in upload queue for jammy/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510354">MP refs/heads/lp2165345/noble → refs/heads/stable/2024.1</a>
+            
+            <span class="muted">Needs review · seyeongkim: Approve</span>
+            
+              <span class="pill error">1 error</span><span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>CHANGELOG001</td>
+                <td><a href="https://documentation.ubuntu.com/project/release-team/list-of-releases/#list-of-releases">Invalid distribution &#39;UNRELEASED&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ004</td>
+                <td><a href="https://documentation.ubuntu.com/project/release-team/list-of-releases/#list-of-releases">Cannot check upload queue for UNRELEASED distribution for package &#39;cinder&#39; version &#39;2:24.2.0-0ubuntu2.2&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>CHANGELOG002</td>
+                <td>Bug LP: #2165345 is not targeted at cinder and UNRELEASED</td><td class="muted">debian/changelog:3</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510353">MP refs/heads/lp2165345/dalmatian → refs/heads/stable/2024.2</a>
+            
+            <span class="muted">Needs review · seyeongkim: Approve</span>
+            
+              <span class="pill error">4 error</span><span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>PATCH002</td>
+                <td>Missing required Description/Subject field</td><td class="muted">debian/patches/lp1823445.patch:1</td></tr>
+            
+            <tr><td class="sev-error">error</td><td>PATCH004</td>
+                <td>Either an Origin field or an Author/From field must be provided</td><td class="muted">debian/patches/lp1823445.patch:1</td></tr>
+            
+            <tr><td class="sev-error">error</td><td>PATCH002</td>
+                <td>Missing required Description/Subject field</td><td class="muted">debian/patches/skip-moto-tests.patch:1</td></tr>
+            
+            <tr><td class="sev-error">error</td><td>PATCH004</td>
+                <td>Either an Origin field or an Author/From field must be provided</td><td class="muted">debian/patches/skip-moto-tests.patch:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble-dalmatian/+queue?queue_state=1&amp;queue_text=cinder">Package &#39;cinder&#39; version &#39;2:25.0.0-0ubuntu1.1~cloud1&#39; is already in upload queue for noble/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510352">MP refs/heads/lp2165345/epoxy → refs/heads/stable/2025.1</a>
+            
+            <span class="muted">Needs review · seyeongkim: Approve</span>
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble-epoxy/+queue?queue_state=1&amp;queue_text=cinder">Package &#39;cinder&#39; version &#39;2:26.0.0-0ubuntu1.2~cloud2&#39; is already in upload queue for noble/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~raineszm/ubuntu/+source/cinder/+git/cinder/+merge/510351">MP refs/heads/lp2165345/flamingo → refs/heads/stable/2025.2</a>
+            
+            <span class="muted">Needs review · seyeongkim: Approve</span>
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble-flamingo/+queue?queue_state=1&amp;queue_text=cinder">Package &#39;cinder&#39; version &#39;2:27.0.0-0ubuntu1~cloud1&#39; is already in upload queue for noble/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-4864" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4864">SI-4864</a></strong>
+      <span>LP 2161000 (cloud-archive/ceph)</span>
+      <span class="muted">Needs Verification &middot; Dan Hill</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2161000">LP: #2161000</a> &middot; <span class="pkg">ceph</span> &middot; [SRU] Squid: Ceph new point release 19.2.6</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html#noble">ceph 19.2.6-0ubuntu0.24.04.1 in noble-proposed, 63 days: tagged block-proposed, double-check before release</a></li><li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161000/comments/23">Ceph 19.2.6 in noble-proposed breaks libvirt RBD storage pools (&#34;failed to set RADOS option: auth_supported&#34;). It was reproduced with Ubuntu-archive packages only, and no libvirt backport or ceph compatibility patch has been released yet. The libvirt fix must ship before or with ceph, or ceph must carry a patch.</a></li><li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161000/comments/21">The block-proposed-noble tag is still set. SRU policy requires the same upstream changes in the newer series (resolute/stonking), so ceph 20.2.4 must be released there first, and it is still pending in resolute unapproved.</a></li><li class="lvl engineer-attention"><a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html#noble">ceph 19.2.6-0ubuntu0.24.04.1 in noble-proposed, 63 days: builds not OK (armhf: Dependency wait)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2161000">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161000/comments/22">Regression mentioned: &#34;…Potential regression: libvirt RBD storage pools on noble Upstream Ceph 19.2.6 removed the deprecate…&#34; (mstevens-imt-systems)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161000/comments/23">Regression mentioned: &#34;…d-party software involved. So this is a regression for any noble host using libvirt RBD storage pools, not just CloudStack. Note…&#34; (mstevens-imt-systems)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161000/comments/18">The new CVE fix and CephX key handling change, along with kernel-related decisions, are still unresolved. The team has not finalised how to communicate the change or how it affects other projects, and verification-done was withdrawn because of this.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161000/comments/9">The autopkgtest regression libvirt/unknown (arm64) reported against the noble upload has not been shown to be resolved or analysed. It may be related to the auth_supported breakage.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161000/comments/13">The tag verification-caracal-needed is still present, so the Ubuntu Cloud Archive caracal verification is not complete.</a></li><li class="lvl review"><a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html#noble">ceph 19.2.6-0ubuntu0.24.04.1 in noble-proposed, 63 days: verified, can be released</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2161000">Development release is not fixed yet</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161000/comments/9">1 earlier concern(s) in comments look resolved by later comments; skim to confirm</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161000">devel</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/ceph/+bug/2161000">noble</a></td>
+            <td class="st-fixed">Fix Committed</td>
+            <td>
+              19.2.6-0ubuntu0.24.04.1 <span class="muted">&middot; 63 d</span><br>
+                <span class="flag bad">block-proposed</span><span class="flag good">verified</span>
+              
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2161000/+attachment/6013318">lp-ceph-auth-supported-removed.patch</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-4978" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4978">SI-4978</a></strong>
+      <span>LP 2167545 (nullboot)</span>
+      <span class="muted">BLOCKED &middot; Gerald Yang</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2167545">LP: #2167545</a> &middot; <span class="pkg">nullboot</span> &middot; Pin goroutine to OS thread when reading the primary key</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/nullboot/+bug/2167545/comments/5">The nullboot maintainers (juliank) object to this individual patch upload by non-boot people. They plan to ship it in a 0.6.1 release (possibly a 0.5.4 for older series) and SRU that instead, and they were not consulted. The debdiffs should not be sponsored until this is coordinated with them.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/nullboot/+bug/2167545/comments/5">The 0.6.0 upload contains big refactorings of the secboot library, so the fix and the 0.6.x line need careful testing. The &#39;risk is low&#39; claim in the bug description may understate this for a sensitive boot component.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/nullboot/+bug/2167545/comments/4">The debdiffs need packaging fixes: the patch name should follow lp2167545-xxxxx.debdiff, and the changelog needs a proper LP entry that names the d/p patch. It is also unclear whether the patch keeps the original upstream headers and description (DEP-3).</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/nullboot/+bug/2167545/comments/0">The Test Plan only gives a reproducer that needs an Azure CVM. It has no step to verify the fix after the upgrade (the loop passing 100 iterations on the updated package), and no regression testing of boot or reseal behaviour on each series.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/nullboot/+bug/2167545/comments/6">A nullboot SRU may need an entry in the package-specific SRU documentation, which has not been addressed.</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2167545">Development release is not fixed yet</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/nullboot/+bug/2167545">devel</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/nullboot/+bug/2167545">jammy</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>patch</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/nullboot/+bug/2167545">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>patch</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/nullboot/+bug/2167545">resolute</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>patch</div></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2167545/+attachment/6000785">jammy.debdiff</a>
+            <code>jammy</code> 
+            
+            
+              <span class="pill info">1 info</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-info">info</td><td>LPBUG003</td>
+                <td><a href="https://documentation.ubuntu.com/project/contributors/patching/make-changes-to-a-package/">No Launchpad bugs referenced in nullboot-0.5.3/debian/changelog</a></td><td class="muted">nullboot-0.5.3/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2167545/+attachment/6000786">noble.debdiff</a>
+            <code>noble</code> 
+            
+            
+              <span class="pill info">1 info</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-info">info</td><td>LPBUG003</td>
+                <td><a href="https://documentation.ubuntu.com/project/contributors/patching/make-changes-to-a-package/">No Launchpad bugs referenced in nullboot-0.5.3/debian/changelog</a></td><td class="muted">nullboot-0.5.3/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2167545/+attachment/6000787">resolute.debdiff</a>
+            <code>resolute</code> 
+            
+            
+              <span class="pill info">1 info</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-info">info</td><td>LPBUG003</td>
+                <td><a href="https://documentation.ubuntu.com/project/contributors/patching/make-changes-to-a-package/">No Launchpad bugs referenced in nullboot-0.5.3/debian/changelog</a></td><td class="muted">nullboot-0.5.3/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-4984" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4984">SI-4984</a></strong>
+      <span>LP 2167730 (mpdecimal)</span>
+      <span class="muted">Reviewed Pending Acceptance &middot; Zachary M Raines</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2167730">LP: #2167730</a> &middot; <span class="pkg">mpdecimal</span> &middot; [SRU] Add libmpdec-dev to noble</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/mpdecimal/+bug/2167730/comments/6">The SRU justification is unclear. The only stated use is for people building CPython &gt;= 3.16 from source, and no archive package in noble needs libmpdec-dev. SRU policy does not normally accept new packages added just to satisfy third-party build dependencies. This question is unanswered.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2167730/+attachment/6001058">sru-lint: 1 error(s) in mpdecimal-for-noble.debdiff</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/mpdecimal/+bug/2167730/comments/0">The Test Plan is vague. It says only &#39;ensure autopkgtests pass&#39; and &#39;build CPython 3.15&#39; with no concrete steps or expected results. It also builds 3.15 while the Impact section is about 3.16.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/mpdecimal/+bug/2167730/comments/4">The upload is a new source package in noble-proposed and sits in the NEW queue, so it needs archive admin review and component overrides. It was backported from resolute with no noble packaging branch in git-ubuntu to base it on.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/mpdecimal/+bug/2167730/comments/0">The &#39;Where problems could occur&#39; section lists only the maintenance burden. It does not assess the security-support commitment, the new binaries and ABI (libmpdec, libmpdec++), or conflicts with other packages. The package was previously removed from Ubuntu and Debian, which adds history that should be addressed.</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/mpdecimal/+bug/2167730">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/mpdecimal/+bug/2167730">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>patch</div></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2167730/+attachment/6001058">mpdecimal-for-noble.debdiff</a>
+            <code>noble</code> 
+            
+            
+              <span class="pill error">1 error</span><span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>CHANGELOG003</td>
+                <td><a href="https://documentation.ubuntu.com/project/contributors/patching/commit-changes/#version-string-format">Version order error: &#39;4.0.1-6~24.04.1&#39; should be greater than &#39;4.0.1-6&#39;</a></td><td class="muted">mpdecimal-4.0.1/debian/changelog:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble/+queue?queue_state=1&amp;queue_text=mpdecimal">Package &#39;mpdecimal&#39; version &#39;4.0.1-6~24.04.1&#39; is already in upload queue for noble/Proposed with status &#39;New&#39;</a></td><td class="muted">mpdecimal-4.0.1/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-5055" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-5055">SI-5055</a></strong>
+      <span>LP 2168803 (qemu)</span>
+      <span class="muted">Backlog &middot; Alex Ramírez</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2168803">LP: #2168803</a> &middot; <span class="pkg">qemu</span> &middot; QEMU 8.2.2 guests crash by exhausting vm.max_map_count with coroutines</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397413">The backported patches parse /proc/sys/vm/max_map_count incorrectly, so the default value is always used and the system limit is never taken into account. The upstream fix has been submitted but not merged, and the SRU does not yet include it.</a></li><li class="lvl blocked"><a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397413">The default returned by get_global_pool_hard_max_size is UINT_MAX, which is effectively no cap. The follow-up change to a conservative default (65530) is not merged upstream, so the cache is still effectively unbounded when parsing fails.</a></li><li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/22">The fix reads /proc/sys/vm/max_map_count, which needs a libvirt AppArmor profile change (LP #2170732). That change is separate, and a versioned Breaks in qemu is still needed to force the libvirt upgrade. Without both, confined guests may fail or regress.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2168803">No patch/MP identified for: stonking, tenacious</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/21">The fix only reduces the risk of hitting the map-count limit and does not eliminate it. With very many vCPUs or IOThreads the guest can still crash, and a crash was reproduced at the noble limit with 255 vCPUs. The SRU should state this residual risk clearly.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/20">Questions remain about whether the fix is needed on noble, where max_map_count is already 1048576, and how the bug behaves once the limit is hit. Live-migration contributions to the cached coroutine count are also unexplored. The impact and test plan need to be coherent for the target series.</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2168803">Development release is not fixed yet</a></li><li class="lvl review"><a href="https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513945">sru-lint: 2 warning(s) in merge proposal 513945 (ubuntu/resolute-devel)</a></li><li class="lvl review"><a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759">sru-lint: 2 warning(s) in merge proposal 512759 (ubuntu/noble-devel)</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/7">1 earlier concern(s) in comments look resolved by later comments; skim to confirm</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803">devel</a></td>
+            <td class="st-pending">Confirmed</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/qemu/+bug/2168803">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/qemu/+bug/2168803">resolute</a></td>
+            <td class="st-pending">Confirmed</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/qemu/+bug/2168803">stonking</a></td>
+            <td class="st-pending">Confirmed</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/tenacious/+source/qemu/+bug/2168803">tenacious</a></td>
+            <td class="st-pending">Confirmed</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513945">MP refs/heads/ubuntu/resolute-devel → refs/heads/ubuntu/resolute-devel</a>
+            <code>resolute</code> 
+            <span class="muted">Needs review</span>
+            
+              <span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>PATCH006</td>
+                <td>Forwarded field should be either &#34;no&#34;, &#34;not-needed&#34; or a valid URL</td><td class="muted">debian/patches/ubuntu/lp2168803/0001-trim-sysctl-max-map-count-newline.patch:20</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>PATCH006</td>
+                <td>Forwarded field should be either &#34;no&#34;, &#34;not-needed&#34; or a valid URL</td><td class="muted">debian/patches/ubuntu/lp2168803/0002-reduce-default-idle-pool.patch:24</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759">MP refs/heads/ubuntu/noble-devel-lp2168803 → refs/heads/ubuntu/noble-devel</a>
+            <code>noble</code> 
+            <span class="muted">Needs review</span>
+            
+              <span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble/+queue?queue_state=1&amp;queue_text=qemu">Package &#39;qemu&#39; version &#39;1:8.2.2+ds-0ubuntu1.20&#39; is already in upload queue for noble/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>PUBHIST003</td>
+                <td><a href="https://launchpad.net/ubuntu/+source/qemu/+publishinghistory">Newer version(s) of &#39;qemu&#39; already published for noble: 1:8.2.2+ds-0ubuntu2 in noble/Proposed/Deleted. Current version &#39;1:8.2.2+ds-0ubuntu1.20&#39; may be outdated.</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-5066" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-5066">SI-5066</a></strong>
+      <span>LP 2061701 (nova)</span>
+      <span class="muted">Needs Verification &middot; Taichi Maeda</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2061701">LP: #2061701</a> &middot; <span class="pkg">nova</span> &middot; [SRU] check_can_live_migrate_source fails with mkfs.vfat error: Label can be no longer than 11 characters</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/nova/+bug/2061701/comments/33">autopkgtest failure/regression reported: &#34;…e StableReleaseUpdates policy regarding autopkgtest regressions [1]. https://ubuntu-archive-team.ubuntu.com/proposed-migration/noble/updat…&#34; (ubuntu-sru-bot)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2061701">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/nova/+bug/2061701/comments/33">The SRU bot reported an autopkgtest regression for nova 3:29.2.0-0ubuntu1.9 on s390x in noble. No later comment shows it was investigated, retried or shown to be unrelated, as the SRU autopkgtest policy requires.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/nova/+bug/2061701/comments/35">Verification was reported for jammy and noble, but the bug tags still read verification-needed-jammy and verification-needed-noble. The reporter&#39;s comments don&#39;t say the tags were changed to verification-done, so the SRU may not be marked as verified.</a></li><li class="lvl review"><a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html#jammy">nova 3:25.2.1-0ubuntu2.12 in jammy-proposed, 29 days: new comments since it was accepted in -proposed</a></li><li class="lvl review"><a href="https://static-reports.ubuntu.com/pending-sru/pending-sru.html#noble">nova 3:29.2.0-0ubuntu1.9 in noble-proposed, 29 days: new comments since it was accepted in -proposed</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/nova/+bug/2061701/comments/2">2 earlier concern(s) in comments look resolved by later comments; skim to confirm</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/nova/+bug/2061701">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/nova/+bug/2061701">jammy</a></td>
+            <td class="st-fixed">Fix Committed</td>
+            <td>
+              3:25.2.1-0ubuntu2.12 <span class="muted">&middot; 29 d</span><br>
+                <span class="flag ">messages</span>
+              
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/nova/+bug/2061701">noble</a></td>
+            <td class="st-fixed">Fix Committed</td>
+            <td>
+              3:29.2.0-0ubuntu1.9 <span class="muted">&middot; 29 d</span><br>
+                <span class="flag ">messages</span>
+              
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/nova/+bug/2061701">resolute</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/nova/+bug/2061701">stonking</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-5128" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-5128">SI-5128</a></strong>
+      <span>LP 2169074 (adsys)</span>
+      <span class="muted">BLOCKED &middot; munir.siddiqui</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2169074">LP: #2169074</a> &middot; <span class="pkg">adsys</span> &middot; Adsys is case sensitive when querying registery \SOFTWARE\Policies\Microsoft\Cryptography\</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/adsys/+bug/2169074/comments/6">The bug description has no SRU template (Impact, Test Plan, Where problems could occur, regression potential), and no later comment adds one. An SRU upload to resolute, noble and jammy normally cannot be accepted without it.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/adsys/+bug/2169074/comments/2">Regression mentioned: &#34;…ins pending. The patch also includes a regression test covering canonical, uppercase-`SOFTWARE`, fully uppercase, and lowercase p…&#34; (johnthacher)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/adsys/+bug/2169074/comments/2">The reporter says the patched before/after comparison on Ubuntu 22.04 is still pending. The fix has only been shown to enable certificate processing on 24.04, so jammy is unverified, and no test plan or verification is recorded for it.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/adsys/+bug/2169074/comments/5">The debdiffs for resolute, noble and jammy were attached with no explanation. They are meant to be a minimal backport of the case-insensitive key matching from 0.17.0, but nothing says so and no reviewer has confirmed they leave out the unrelated 0.17.0 changes. The new regression test and its dependencies also need checking against the older code and Go toolchains.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/adsys/+bug/2169074/comments/3">The 0.17.0 changelog says the fix canonicalizes matched keys but does not say how the existing case-sensitive handling or the downstream consumer of policy-server keys behaves afterwards. Behavioural regressions, for example for GPOs that already worked, are not assessed in an SRU risk section.</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/adsys/+bug/2169074">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/adsys/+bug/2169074">jammy</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/adsys/+bug/2169074">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/adsys/+bug/2169074">resolute</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/adsys/+bug/2169074">stonking</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/tenacious/+source/adsys/+bug/2169074">tenacious</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2169074/+attachment/6004013">adsys-certificate-casing.patch</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2169074/+attachment/6011920">lp2169074_resolute.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2169074/+attachment/6011921">lp2169074_noble.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2169074/+attachment/6011922">lp2169074_jammy.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl blocked" id="card-SI-5142" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">blocked</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-5142">SI-5142</a></strong>
+      <span>LP 2161211 (cloud-archive/ceph)</span>
+      <span class="muted">Backlog &middot; Ponnuvel Palaniyappan</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2161211">LP: #2161211</a> &middot; <span class="pkg">ceph</span> &middot; ceph-osd crashes due to a data race</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161211/comments/2">The bug has no SRU template (impact, test plan, regression potential, where problems could occur). The crash is intermittent and the report gives no reproducer or verification steps.</a></li><li class="lvl blocked"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161211/comments/6">The Noble debdiff is based on 19.2.3, but a 19.2.6 point release is already in -proposed. The Noble debdiff will need rebasing, and the upload could conflict with or be superseded by the 19.2.6 update.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161211/comments/6">The upstream fix (ceph PR 70762) is in 19.2.x but not yet released, targeted for 19.2.7. Its status for Reef/Quincy (17.2.x) is not stated, so the Jammy patch may be a downstream-only backport. Upstream acceptance and the actual commit applied are not confirmed.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161211/comments/5">The first Jammy attachment was a .patch rather than a proper debdiff and was replaced. The new debdiff has not yet been reviewed or sponsored, and there is no evidence that the PPA build was tested.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161211/comments/2">A fix for the lock ordering and locking around update_schedule() could introduce deadlock risk or contention in the scrub scheduler. This regression risk has not been assessed, and there is no testing beyond the PPA.</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2161211/+attachment/6010679">sru-lint: 1 warning(s) in ceph_19.2.3-0ubuntu0.24.04.4.debdiff</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/ceph/+bug/2161211">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/ceph/+bug/2161211">jammy</a></td>
+            <td class="st-pending">Triaged</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/ceph/+bug/2161211">noble</a></td>
+            <td class="st-pending">Triaged</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/ceph/+bug/2161211">resolute</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/ceph/+bug/2161211">stonking</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/tenacious/+source/ceph/+bug/2161211">tenacious</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2161211/+attachment/6010342">lp2161211-scrub-job-schedule-race.patch</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2161211/+attachment/6010503">ceph_17.2.9-0ubuntu0.22.04.5.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2161211/+attachment/6010678">ceph_17.2.9-0ubuntu0.22.04.5.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2161211/+attachment/6010679">ceph_19.2.3-0ubuntu0.24.04.4.debdiff</a>
+            
+            
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>PUBHIST003</td>
+                <td><a href="https://launchpad.net/ubuntu/+source/ceph/+publishinghistory">Newer version(s) of &#39;ceph&#39; already published for noble: 19.2.6-0ubuntu0.24.04.1 in noble/Proposed/Published. Current version &#39;19.2.3-0ubuntu0.24.04.4&#39; may be outdated.</a></td><td class="muted">ceph-19.2.3/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-3048" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-3048">SI-3048</a></strong>
+      <span>LP 2069442 (cloud-archive/neutron)</span>
+      <span class="muted">BLOCKED &middot; Brian Haley</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2069442">LP: #2069442</a> &middot; <span class="pkg">neutron</span> &middot; Deleting a VM may produce a traceback because of a race</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2069442">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2069442">No patches or merge proposals found for the pending series</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/neutron/+bug/2069442">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/neutron/+bug/2069442">noble</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/questing/+source/neutron/+bug/2069442">questing</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/neutron/+bug/2069442">resolute</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-3094" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-3094">SI-3094</a></strong>
+      <span>LP 1982287 (cloud-archive/neutron)</span>
+      <span class="muted">Backlog &middot; Brian Haley</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/1982287">LP: #1982287</a> &middot; <span class="pkg">?</span> &middot; [rfe][ovn] Support address group for ovn driver</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/1982287">Bug has no Ubuntu package tasks</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/1982287">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/1982287">No patches or merge proposals found for the pending series</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/neutron/+bug/1982287/comments/13">The fix is an approved RFE (a new feature) backported to stable/2024.2 and stable/2024.1. Ubuntu SRU policy normally rejects new features, so it needs an explicit exception or a clear bug-fix justification.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/neutron/+bug/1982287/comments/12">The yoga backport was abandoned because of an ovsdbapp dependency (the Address_Set support landed in ovsdbapp change 905044). Nothing shows that the ovsdbapp version in the target Ubuntu series supports this, so the backport may fail or need a matching ovsdbapp SRU.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/neutron/+bug/1982287/comments/14">The stable cherry-picks had conflicts in the functional tests and the release note, and the master commit is only tagged Related-Bug. The bug is closed only by a tempest-plugin test-job change, so there is no SRU-style test plan, regression analysis or upgrade-impact assessment. Existing OVN deployments will see new Address_Set and ACL behaviour after an upgrade.</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/neutron/+bug/1982287/comments/1">1 earlier concern(s) in comments look resolved by later comments; skim to confirm</a></li>
+        </ul>
+
+        
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-3665" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-3665">SI-3665</a></strong>
+      <span>LP 2121543 (libnss-db)</span>
+      <span class="muted">BLOCKED &middot; Ponnuvel Palaniyappan</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2121543">LP: #2121543</a> &middot; <span class="pkg">libnss-db</span> &middot; [SRU] Poor performance of libnss-db on large db files</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2121543">No patch/MP identified for: jammy, noble, resolute</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/libnss-db/+bug/2121543/comments/26">The fix has to land in the development release (stonking) before it can be released to the stable series. The stonking change is only in a merge proposal. The reviewer says it probably won&#39;t land before release, so its version may need to change from `ubuntu1` to `ubuntu0.1`. That version question is not yet settled.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/libnss-db/+bug/2121543/comments/25">The patch exists only as an Ubuntu delta. Debian has not responded to the patch or the maintainer call, and upstream is abandoned. The reviewers accepted this, but nobody else has reviewed the patch&#39;s behavior, such as the connection-reuse logic and the CVE-2014-8121 regression risk. One reviewer said the sponsor needs to check it deeply.</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2121543">Development release is not fixed yet</a></li><li class="lvl review"><a href="https://code.launchpad.net/~pponnuvel/ubuntu/+source/libnss-db/+git/libnss-db/+merge/510447">sru-lint: 1 warning(s) in merge proposal 510447 (ubuntu/stonking-devel)</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/libnss-db/+bug/2121543">devel</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/libnss-db/+bug/2121543">jammy</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/libnss-db/+bug/2121543">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/questing/+source/libnss-db/+bug/2121543">questing</a></td>
+            <td class="st-muted">Won&#39;t Fix (EOL)</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/libnss-db/+bug/2121543">resolute</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/libnss-db/+bug/2121543">stonking</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~pponnuvel/ubuntu/+source/libnss-db/+git/libnss-db/+merge/510447">MP refs/heads/lp2121543-stonking → refs/heads/ubuntu/stonking-devel</a>
+            <code>stonking</code> 
+            <span class="muted">Needs review</span>
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>CTRL001</td>
+                <td><a href="https://documentation.ubuntu.com/project/how-ubuntu-is-made/concepts/debian-directory/#the-control-file">Version number suggests Ubuntu changes, but Maintainer: does not have Ubuntu address.</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-3784" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-3784">SI-3784</a></strong>
+      <span>LP 2032817 (cloud-archive/neutron)</span>
+      <span class="muted">BLOCKED &middot; Brian Haley</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2032817">LP: #2032817</a> &middot; <span class="pkg">neutron</span> &middot; [OVN] packet drops when provider network MTU exceeds tenant network MTU</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2032817">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2032817">No patches or merge proposals found for the pending series</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/neutron/+bug/2032817/comments/35">Regression mentioned: &#34;…two commits in one to not introduce a regression by doing them separately. There were small changes required to unit tes…&#34; (hudson-openstack)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/neutron/+bug/2032817/comments/37">The bug has no SRU template (impact, test plan, regression potential) and no Ubuntu package tasks. A reviewer cannot judge the SRU without them, and the test plan would need a router with provider MTU &gt; tenant MTU and ovn_emit_need_to_frag enabled.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/neutron/+bug/2032817/comments/35">The 2024.1 and 2024.2 backports squash the original change and its follow-up regression fix (LP #2105383) into one commit, with conflict resolutions and unit test changes. The original change introduced a redirect-type regression, so the squashed backport needs careful review and testing on the Ubuntu-packaged versions.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/neutron/+bug/2032817/comments/26">The fix only takes effect when ovn.ovn_emit_need_to_frag is set, and the E/W part is only fixed in OVN 24.09. Whether the OVN version shipped in the target Ubuntu series supports gateway_mtu, and whether the option is enabled by default, is not established.</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/neutron/+bug/2032817">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/neutron/+bug/2032817">noble</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/questing/+source/neutron/+bug/2032817">questing</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/neutron/+bug/2032817">resolute</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-4037" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4037">SI-4037</a></strong>
+      <span>LP 2115795 (ovn)</span>
+      <span class="muted">BLOCKED &middot; Erlon Rodrigues Cruz</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2115795">LP: #2115795</a> &middot; <span class="pkg">ovn</span> &middot; UDP fragmented packets not passing through in DPDK when destination port is defined</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2115795">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2115795">No patches or merge proposals found for the pending series</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2115795">Development release is not fixed yet</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/ovn/+bug/2115795">devel</a></td>
+            <td class="st-pending">Confirmed</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/ovn/+bug/2115795">noble</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/ovn/+bug/2115795">resolute</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/ovn/+bug/2115795">stonking</a></td>
+            <td class="st-pending">Confirmed</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-4064" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4064">SI-4064</a></strong>
+      <span>LP 2116087 (cloud-archive/neutron)</span>
+      <span class="muted">Backlog &middot; Brian Haley</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2116087">LP: #2116087</a> &middot; <span class="pkg">neutron</span> &middot; remote-managed vnic-type binding profile validation error</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2116087">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2116087">No patches or merge proposals found for the pending series</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2116087">Development release is not fixed yet</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/neutron/+bug/2116087">devel</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/neutron/+bug/2116087">jammy</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/neutron/+bug/2116087">noble</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-4434" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4434">SI-4434</a></strong>
+      <span>Neutron Caracal Point Release</span>
+      <span class="muted">Reviewed Pending Acceptance &middot; Brian Haley</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2148509">LP: #2148509</a> &middot; <span class="pkg">neutron</span> &middot; [SRU] Neutron stable point releases</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2148509">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~dgadomski/ubuntu/+source/neutron/+git/neutron/+merge/511631">sru-lint: 3 error(s) in merge proposal 511631 (upstream-epoxy)</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/cloud-archive/+bug/2148509/comments/22">The verification-caracal-needed tag was never changed to done, and the only Caracal-looking testing (neutron 2:24.2.2) is labelled as &#39;Epoxy&#39; verification. The Caracal verification record is therefore unclear, even though 24.2.2 was released to -updates.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/cloud-archive/+bug/2148509/comments/21">The Epoxy and Flamingo uploads were released with a version string that deviates from the cloud archive convention. The fix is deferred to the next point release, so the version ordering and upgrade path may be affected until then.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/cloud-archive/+bug/2148509/comments/23">The Caracal upload added a CVE patch (addr-pair-maint) and a router external-gateway-delete fix (lp2162868) on top of the point release. No comment shows these two patches were verified, and the individual bug checks in the comments cover other bugs.</a></li><li class="lvl sponsor-attention"><a href="https://code.launchpad.net/~dgadomski/ubuntu/+source/neutron/+git/neutron/+merge/511632">sru-lint did not run on merge proposal 511632 (stable/2025.1): sru-lint timed out after 180s</a></li><li class="lvl sponsor-attention"><a href="https://code.launchpad.net/~dgadomski/ubuntu/+source/neutron/+git/neutron/+merge/511628">sru-lint did not run on merge proposal 511628 (stable/2025.2): sru-lint timed out after 180s</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/neutron/+bug/2148509">devel</a></td>
+            <td class="st-muted">Invalid</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/neutron/+bug/2148509">jammy</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/neutron/+bug/2148509">noble</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/questing/+source/neutron/+bug/2148509">questing</a></td>
+            <td class="st-muted">Won&#39;t Fix (EOL)</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/neutron/+bug/2148509">resolute</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~dgadomski/ubuntu/+source/neutron/+git/neutron/+merge/513471">MP refs/heads/pristine-tar → refs/heads/pristine-tar</a>
+            
+            <span class="muted">Merged</span>
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~dgadomski/ubuntu/+source/neutron/+git/neutron/+merge/511632">MP refs/heads/stable/2025.1 → refs/heads/stable/2025.1</a>
+            
+            <span class="muted">Merged</span>
+            <span class="pill error">failed</span>
+            
+          </summary>
+          <p class="sev-error">sru-lint timed out after 180s</p>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~dgadomski/ubuntu/+source/neutron/+git/neutron/+merge/511631">MP refs/heads/upstream-epoxy → refs/heads/upstream-epoxy</a>
+            
+            <span class="muted">Merged</span>
+            
+              <span class="pill error">3 error</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>DUMMY001</td>
+                <td>TODO comment found in added line</td><td class="muted">neutron/tests/functional/plugins/ml2/drivers/ovn/mech_driver/ovsdb/test_ovsdb_monitor.py:242</td></tr>
+            
+            <tr><td class="sev-error">error</td><td>DUMMY001</td>
+                <td>TODO comment found in added line</td><td class="muted">neutron/tests/functional/plugins/ml2/drivers/ovn/mech_driver/ovsdb/test_ovsdb_monitor.py:242</td></tr>
+            
+            <tr><td class="sev-error">error</td><td>DUMMY001</td>
+                <td>TODO comment found in added line</td><td class="muted">neutron/tests/unit/db/test_l3_db.py:1084</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~dgadomski/ubuntu/+source/neutron/+git/neutron/+merge/511628">MP refs/heads/stable/2025.2 → refs/heads/stable/2025.2</a>
+            
+            <span class="muted">Merged</span>
+            <span class="pill error">failed</span>
+            
+          </summary>
+          <p class="sev-error">sru-lint timed out after 180s</p>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~dgadomski/ubuntu/+source/neutron/+git/neutron/+merge/511627">MP refs/heads/upstream-flamingo → refs/heads/upstream-flamingo</a>
+            
+            <span class="muted">Merged</span>
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~dgadomski/ubuntu/+source/neutron/+git/neutron/+merge/511626">MP refs/heads/pristine-tar → refs/heads/pristine-tar</a>
+            
+            <span class="muted">Merged</span>
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-4683" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4683">SI-4683</a></strong>
+      <span>LP 2159858 (landscape-client)</span>
+      <span class="muted">Backlog &middot; satya.jhaveri</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2159858">LP: #2159858</a> &middot; <span class="pkg">?</span> &middot; landscape-client registration fails against servers with large numbers of cross-signed TLS certificates</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2159858">Bug has no Ubuntu package tasks</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2159858">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2159858">No patches or merge proposals found for the pending series</a></li>
+        </ul>
+
+        
+        
+
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-4950" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-4950">SI-4950</a></strong>
+      <span>LP 2167098 (systemd)</span>
+      <span class="muted">Reviewed Pending Acceptance &middot; Dean Marx</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2167098">LP: #2167098</a> &middot; <span class="pkg">systemd</span> &middot; IPv4 route MTUs silently dropped after networkd restart / networkctl reconfigure / netplan apply</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/511467/comments/1392567">enr0n voted &#39;Needs Fixing&#39;</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/2167098/comments/0">The bug description has no SRU template (Impact, Test Plan, Where problems could occur, Other info), and the bug carries no tags. SRU policy requires these before the fix can be accepted into -proposed.</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/511925/comments/1393731">The approved fix (MP 511925) is only staged, not uploaded, and the changelog commit was deliberately left out. The final upload still needs a proper changelog with the bug reference (LP: #2167098) and the correct series and version.</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/511925/comments/1393536">Test results are local only. The check-version-history failure is called unrelated, but no evidence is given (for example a baseline run without the patch). The reproducer from the bug (restart networkd, then reconfigure, then check the MTU routes) is not reported as re-run against the patched build.</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/511467/comments/1392567">The earlier MP 511467 was marked Needs Fixing because the patch did not obviously correspond to upstream commit 7027cdbd79c2. The author&#39;s promised fuller patch header is not confirmed. It is unclear whether MP 511467 was superseded by 511925, or whether the final patch has proper DEP-3 headers explaining it as a significant adaptation from upstream.</a></li><li class="lvl review"><a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/511925">sru-lint: 2 warning(s) in merge proposal 511925 (ubuntu-noble)</a></li><li class="lvl review"><a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/511467">sru-lint: 2 warning(s) in merge proposal 511467 (ubuntu-noble)</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/2167098">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/systemd/+bug/2167098">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Merged)</div><div>MP (Superseded)</div></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/511925">MP refs/heads/ubuntu-noble-lp2167098 → refs/heads/ubuntu-noble</a>
+            <code>noble</code> 
+            <span class="muted">Merged · enr0n: Approve</span>
+            
+              <span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble/+queue?queue_state=1&amp;queue_text=systemd">Package &#39;systemd&#39; version &#39;255.4-1ubuntu8.17+lp2167098v2&#39; is already in upload queue for noble/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>PUBHIST003</td>
+                <td><a href="https://launchpad.net/ubuntu/+source/systemd/+publishinghistory">Newer version(s) of &#39;systemd&#39; already published for noble: 255.4-1ubuntu9 in noble/Proposed/Deleted; 255.4-1ubuntu8.18 in noble/Updates/Published; 255.4-1ubuntu8.18 in noble/Security/Published. Current version &#39;255.4-1ubuntu8.17+lp2167098v2&#39; may be outdated.</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/511467">MP refs/heads/ubuntu-noble-lp2167098 → refs/heads/ubuntu-noble</a>
+            <code>noble</code> 
+            <span class="muted">Superseded · enr0n: Needs Fixing</span>
+            
+              <span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>PUBHIST003</td>
+                <td><a href="https://launchpad.net/ubuntu/+source/systemd/+publishinghistory">Newer version(s) of &#39;systemd&#39; already published for noble: 255.4-1ubuntu9 in noble/Proposed/Deleted; 255.4-1ubuntu8.18 in noble/Updates/Published; 255.4-1ubuntu8.18 in noble/Security/Published. Current version &#39;255.4-1ubuntu8.17+lp2167098v2&#39; may be outdated.</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble/+queue?queue_state=1&amp;queue_text=systemd">Package &#39;systemd&#39; version &#39;255.4-1ubuntu8.17+lp2167098v2&#39; is already in upload queue for noble/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-5005" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-5005">SI-5005</a></strong>
+      <span>LP 2167891 (tpm2-pkcs11)</span>
+      <span class="muted">Needs Sponsorship Review &middot; Jorge Merlino</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2167891">LP: #2167891</a> &middot; <span class="pkg">tpm2-pkcs11</span> &middot; &#34;Host memory error&#34; when using tpm with wpa_supplicant</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/tpm2-pkcs11/+bug/2167891/comments/6">The [Where problems could occur] section appears to have been updated only after a reviewer asked for more detail. The first revision left it empty, so the final text should be checked for a real regression analysis of the new RSA public-key fallback.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/tpm2-pkcs11/+bug/2167891/comments/0">The test plan relies on a custom synthetic reproducer (swtpm, abrmd, libp11 engine) that is not clearly attached or documented with step-by-step instructions. It also has no verification steps for the actual wpa_supplicant scenario, so a reviewer cannot easily reproduce it.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/tpm2-pkcs11/+bug/2167891/comments/7">Debdiffs were uploaded for resolute, stonking and tenacious at different times. It is unclear whether the earlier series were checked for consistency, or whether the oldest affected release has a fix at all. Version numbers and the use of upstream patch headers (Origin) need checking in each debdiff.</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2167891">Development release is not fixed yet</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/tpm2-pkcs11/+bug/2167891">devel</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/tpm2-pkcs11/+bug/2167891">resolute</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/tpm2-pkcs11/+bug/2167891">stonking</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/tenacious/+source/tpm2-pkcs11/+bug/2167891">tenacious</a></td>
+            <td class="st-pending">New</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2167891/+attachment/6001816">lp2167891_resolute.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2167891/+attachment/6009514">lp2167891_resolute_v2.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2167891/+attachment/6009516">lp2167891_stonking.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2167891/+attachment/6010733">lp2167891_tenacious.debdiff</a>
+            
+            
+            <span class="pill ok">clean</span>
+            
+          </summary>
+          
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-5063" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-5063">SI-5063</a></strong>
+      <span>LP 2169162 (sssd)</span>
+      <span class="muted">Needs Sponsorship Review &middot; Maizi Liao</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2169162">LP: #2169162</a> &middot; <span class="pkg">sssd</span> &middot; sssd-kcm fails to start due to use-after-free with krb5_renew_interval</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/2169162/+attachment/6006286">sru-lint: 1 error(s) in lp2169162_stonking.debdiff</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~liaomaizi/ubuntu/+source/sssd/+git/sssd/+merge/512669">sru-lint: 1 error(s) in merge proposal 512669 (ubuntu/devel)</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~liaomaizi/ubuntu/+source/sssd/+git/sssd/+merge/512669/comments/1395429">ahasenack voted &#39;Needs Fixing&#39;</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2169162/+attachment/6006345">sru-lint: 1 warning(s) in lp2169162_resolute.debdiff</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2169162/+attachment/6010680">sru-lint: 1 warning(s) in lp2169162_resolute.debdiff</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2169162/+attachment/6011713">sru-lint: 1 warning(s) in lp2169162_noble.debdiff</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/ubuntu/+source/sssd/+bug/2169162/comments/9">1 earlier concern(s) in comments look resolved by later comments; skim to confirm</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/sssd/+bug/2169162">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/sssd/+bug/2169162">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/sssd/+bug/2169162">resolute</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/sssd/+bug/2169162">stonking</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2169162/+attachment/6006286">lp2169162_stonking.debdiff</a>
+            
+            
+            
+              <span class="pill error">1 error</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>PUBHIST001</td>
+                <td><a href="https://launchpad.net/ubuntu/+source/sssd/+publishinghistory">Version &#39;2.12.0-4ubuntu4&#39; of &#39;sssd&#39; is already published in: stonking/Release/Published, stonking/Proposed/Deleted</a></td><td class="muted">sssd-2.12.0/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2169162/+attachment/6006345">lp2169162_resolute.debdiff</a>
+            
+            
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/resolute/+queue?queue_state=1&amp;queue_text=sssd">Package &#39;sssd&#39; version &#39;2.12.0-1ubuntu5.5+lp2169162v20261006b1&#39; is already in upload queue for resolute/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">sssd-2.12.0/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2169162/+attachment/6010680">lp2169162_resolute.debdiff</a>
+            
+            
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/resolute/+queue?queue_state=1&amp;queue_text=sssd">Package &#39;sssd&#39; version &#39;2.12.0-1ubuntu5.6&#39; is already in upload queue for resolute/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">sssd-2.12.0/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/2169162/+attachment/6011713">lp2169162_noble.debdiff</a>
+            
+            
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble/+queue?queue_state=1&amp;queue_text=sssd">Package &#39;sssd&#39; version &#39;2.9.4-1.1ubuntu6.9&#39; is already in upload queue for noble/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">sssd-2.9.4/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~liaomaizi/ubuntu/+source/sssd/+git/sssd/+merge/512669">MP refs/heads/ubuntu/devel → refs/heads/ubuntu/devel</a>
+            
+            <span class="muted">Merged · ahasenack: Approve</span>
+            
+              <span class="pill error">1 error</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-error">error</td><td>PUBHIST001</td>
+                <td><a href="https://launchpad.net/ubuntu/+source/sssd/+publishinghistory">Version &#39;2.12.0-4ubuntu4&#39; of &#39;sssd&#39; is already published in: stonking/Release/Published, stonking/Proposed/Deleted</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-5074" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-5074">SI-5074</a></strong>
+      <span>LP 1741364 (cloud-archive/nova)</span>
+      <span class="muted">BLOCKED &middot; Erlon Rodrigues Cruz</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/1452641">LP: #1452641</a> &middot; <span class="pkg">nova</span> &middot; Static Ceph mon IP addresses in connection_info can prevent VM startup</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/bugs/1452641">SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete</a></li><li class="lvl sponsor-attention"><a href="https://bugs.launchpad.net/bugs/1452641/+attachment/5031258">sru-lint did not run on virt/libvirt/migration.py  patch: could not parse sru-lint output (no JSON array in sru-lint output): [31mERROR[0m sru-lint.cli: No files found in patch or failed to parse patch</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/nova/+bug/1452641">devel</a></td>
+            <td class="st-pending">Triaged</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/1452641/+attachment/5031258">virt/libvirt/migration.py  patch</a>
+            
+            
+            <span class="pill error">failed</span>
+            
+          </summary>
+          <p class="sev-error">could not parse sru-lint output (no JSON array in sru-lint output): [31mERROR[0m sru-lint.cli: No files found in patch or failed to parse patch</p>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl engineer-attention" id="card-SI-5110" data-level="engineer-attention">
+    <summary>
+      <span class="badge lvl engineer-attention">engineer-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-5110">SI-5110</a></strong>
+      <span>LP 1672522 (cloud-archive/openvswitch)</span>
+      <span class="muted">Reviewed Pending Acceptance &middot; munir.siddiqui</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/1672522">LP: #1672522</a> &middot; <span class="pkg">openvswitch</span> &middot; The python-openvswitch package should build the json C extension</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/openvswitch/+bug/1672522/comments/3">The bug has no visible SRU template (impact, test plan, where problems could occur, regression potential). The only test-plan artifact is a benchmark script attached without explanation. The reviewer needs a full test plan before acceptance.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/openvswitch/+bug/1672522/comments/5">The jammy upload (2.17.12-0ubuntu0.22.04.2) has no verification yet. Nothing shows the C json extension actually builds and gets used in the jammy package, or that it works in -proposed. James Page&#39;s 2018 note that the extension depends on the package being built was never shown to be solved for jammy.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/openvswitch/+bug/1672522/comments/4">Enabling the native extension changes the default python-openvswitch behaviour in a stable release, and nothing here assesses regression risk. Open questions are build-dependency changes, a possible new shared-library dependency, and compatibility with Neutron/OVN consumers on jammy.</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/1672522/+attachment/6008445">sru-lint: 1 warning(s) in lp1672522_jammy.debdiff</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/openvswitch/+bug/1672522">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/jammy/+source/openvswitch/+bug/1672522">jammy</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/openvswitch/+bug/1672522">noble</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/openvswitch/+bug/1672522">resolute</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/openvswitch/+bug/1672522">stonking</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://bugs.launchpad.net/bugs/1672522/+attachment/6008445">lp1672522_jammy.debdiff</a>
+            
+            
+            
+              <span class="pill warning">1 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/jammy/+queue?queue_state=1&amp;queue_text=openvswitch">Package &#39;openvswitch&#39; version &#39;2.17.12-0ubuntu0.22.04.2&#39; is already in upload queue for jammy/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">openvswitch-2.17.12/debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  <details class="card lvl sponsor-attention" id="card-SI-5015" data-level="sponsor-attention">
+    <summary>
+      <span class="badge lvl sponsor-attention">sponsor-attention</span>
+      <strong><a href="https://warthogs.atlassian.net/browse/SI-5015">SI-5015</a></strong>
+      <span>LP 2085314 (systemd)</span>
+      <span class="muted">Reviewed Pending Acceptance &middot; Dean Marx</span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2085314">LP: #2085314</a> &middot; <span class="pkg">systemd</span> &middot; systemd-networkd segfault (question #819069)</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl sponsor-attention"><a href="https://bugs.launchpad.net/bugs/2085314">Ready for a sponsor to review and upload: noble</a></li><li class="lvl review"><a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/512012">sru-lint: 2 warning(s) in merge proposal 512012 (ubuntu-noble)</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/2085314/comments/7">1 earlier concern(s) in comments look resolved by later comments; skim to confirm</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>In -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/2085314">devel</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/systemd/+bug/2085314">noble</a></td>
+            <td class="st-pending">Triaged</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Merged)</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/plucky/+source/systemd/+bug/2085314">plucky</a></td>
+            <td class="st-fixed">Fix Released</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~dmarx11/ubuntu/+source/systemd/+git/systemd/+merge/512012">MP refs/heads/ubuntu-noble-lp2085314 → refs/heads/ubuntu-noble</a>
+            <code>noble</code> 
+            <span class="muted">Merged · mruffell: Approve · enr0n: Approve</span>
+            
+              <span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>UPLOADQ003</td>
+                <td><a href="https://launchpad.net/ubuntu/noble/+queue?queue_state=1&amp;queue_text=systemd">Package &#39;systemd&#39; version &#39;255.4-1ubuntu8.17+lp2085314&#39; is already in upload queue for noble/Proposed with status &#39;Unapproved&#39;</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>PUBHIST003</td>
+                <td><a href="https://launchpad.net/ubuntu/+source/systemd/+publishinghistory">Newer version(s) of &#39;systemd&#39; already published for noble: 255.4-1ubuntu9 in noble/Proposed/Deleted; 255.4-1ubuntu8.18 in noble/Updates/Published; 255.4-1ubuntu8.18 in noble/Security/Published. Current version &#39;255.4-1ubuntu8.17+lp2085314&#39; may be outdated.</a></td><td class="muted">debian/changelog:1</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  
+
+  
+  <h2 data-level="done" class="doneh">Done (6)</h2>
+  <ul class="done-list" data-level="done">
+    <li><a href="https://warthogs.atlassian.net/browse/SI-4389">SI-4389</a> &middot;
+      <a href="https://bugs.launchpad.net/bugs/2147687">LP: #2147687</a> <code>landscape-client</code> landscape-client leaks file descriptors on deferr…</li>
+    <li><a href="https://warthogs.atlassian.net/browse/SI-4744">SI-4744</a> &middot;
+      <a href="https://bugs.launchpad.net/bugs/2162006">LP: #2162006</a> <code>systemd</code> Fix race condition when systemd is restarted whil…</li>
+    <li><a href="https://warthogs.atlassian.net/browse/SI-4829">SI-4829</a> &middot;
+      <a href="https://bugs.launchpad.net/bugs/2164699">LP: #2164699</a> <code>linux</code> seccomp filter leak in bpf_jit due to unreaped zo…</li>
+    <li><a href="https://warthogs.atlassian.net/browse/SI-4850">SI-4850</a> &middot;
+      <a href="https://bugs.launchpad.net/bugs/2163508">LP: #2163508</a> <code>linux</code> ice: E810 interface fails to initialize (ice_init…</li>
+    <li><a href="https://warthogs.atlassian.net/browse/SI-5009">SI-5009</a> &middot;
+      <a href="https://bugs.launchpad.net/bugs/2167995">LP: #2167995</a> <code>linux</code> HMC error triggers cascading PF resets and tears…</li>
+    <li><a href="https://warthogs.atlassian.net/browse/SI-5010">SI-5010</a> &middot;
+      <a href="https://bugs.launchpad.net/bugs/2166192">LP: #2166192</a> <code>linux</code> Noble update: upstream stable patchset 2026-09-02</li>
+    
+  </ul>
+  
+</main>
+
+<script>
+(function () {
+  var tiles = document.querySelectorAll('.tile');
+  var items = document.querySelectorAll('[data-level]:not(.tile)');
+  tiles.forEach(function (tile) {
+    tile.addEventListener('click', function () {
+      tiles.forEach(function (t) { t.classList.remove('active'); });
+      tile.classList.add('active');
+      items.forEach(function (el) { el.hidden = !(tile.dataset.level === 'all' || el.dataset.level === tile.dataset.level); });
+    });
+  });
+  function openFromHash() {
+    var el = location.hash && document.querySelector(location.hash);
+    if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); }
+  }
+  window.addEventListener('hashchange', openFromHash); openFromHash();
+  function setAll(open) { document.querySelectorAll('details.card').forEach(function (d) { d.open = open; }); }
+  var e = document.getElementById('expand'), c = document.getElementById('collapse');
+  if (e) { e.onclick = function () { setAll(true); }; c.onclick = function () { setAll(false); }; }
+})();
+</script>
+</body>
+</html>
