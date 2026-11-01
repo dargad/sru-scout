@@ -5,11 +5,12 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from typing import Any, Iterator
+from urllib.parse import urlencode
 
 import requests
 
 from sru_scout.http import TIMEOUT, make_session
-from sru_scout.models import Comment, MergeProposal, Patch, SeriesStatus
+from sru_scout.models import Comment, MergeProposal, Patch, QueuedUpload, SeriesStatus
 
 API = "https://api.launchpad.net/devel"
 
@@ -91,6 +92,20 @@ class LaunchpadClient:
 
     def bug(self, bug_id: int) -> dict[str, Any]:
         return self._get(f"{API}/bugs/{bug_id}")
+
+    def queued_uploads(self, series: str, package: str) -> list[QueuedUpload]:
+        """Uploads of source `package` waiting in the New/Unapproved queue of Ubuntu `series`."""
+        out = []
+        for status, queue_state in (("New", 0), ("Unapproved", 1)):
+            query = urlencode({"ws.op": "getPackageUploads", "status": status, "name": package, "exact_match": "true"})
+            web = "https://launchpad.net/ubuntu/{}/+queue?{}".format(
+                series, urlencode({"queue_state": queue_state, "queue_text": package})
+            )
+            for e in self._entries(f"{API}/ubuntu/{series}?{query}"):
+                if not (e.get("contains_source") or e.get("contains_copy")):
+                    continue
+                out.append(QueuedUpload(series, e.get("package_name") or package, e.get("package_version", ""), status, web))
+        return out
 
     def series_statuses(self, bug: dict[str, Any]) -> tuple[str, list[SeriesStatus]]:
         """Return (source package(s), per-series statuses) from the bug's Ubuntu tasks."""

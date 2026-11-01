@@ -61,6 +61,30 @@ def test_sponsor_is_asked_only_for_series_not_in_proposed():
     assert b.level == "sponsor-attention" and b.findings[0].text.endswith("upload: jammy")
 
 
+def test_queued_upload_is_ready():
+    from sru_scout.models import QueuedUpload
+
+    series = [SeriesStatus("noble", "In Progress")]
+    b = bug(series, [Patch("p", "w", "d", [], lint())], queued=[QueuedUpload("noble", "pkg", "1.0", "Unapproved", "q")])
+    assert b.level == "ready" and "upload queue" in b.findings[0].text
+    issue = IssueReview("SI-1", "u", "s", bugs=[b])
+    classify_issue(issue)
+    assert "Unapproved queue" in render_html([issue])
+
+
+def test_verification_needed_tag_needs_engineer():
+    from sru_scout.models import PendingEntry
+
+    fixed = [SeriesStatus("noble", "Fix Committed")]
+    tags = ["verification-needed", "verification-needed-noble"]
+    assert bug(fixed, tags=tags).level == "engineer-attention"
+    b = bug(fixed, pending=[PendingEntry(1, "noble", "pkg", "1.0", 2)], tags=tags)
+    assert b.level == "engineer-attention" and [f.text for f in b.findings] == [
+        "pkg 1.0 in noble-proposed, 2 days: verification needed (verification-needed-noble)"
+    ]
+    assert bug(fixed, tags=["verification-done-noble"]).level == "done"
+
+
 def test_missing_series_coverage():
     series = [SeriesStatus("noble", "In Progress"), SeriesStatus("jammy", "In Progress")]
     attributed = bug(series, [Patch("p", "w", "d", ["noble"], lint())])

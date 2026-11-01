@@ -11,7 +11,7 @@ from sru_scout.jira import JiraIssue
 from sru_scout.launchpad import LaunchpadClient, LaunchpadError, annotate_series
 from sru_scout.lint import SruLint
 from sru_scout.llm import LLMAnalyzer
-from sru_scout.models import BugReview, IssueReview
+from sru_scout.models import BugReview, IssueReview, QueuedUpload, SeriesStatus
 from sru_scout.pending import PendingSRU
 from sru_scout.triage import classify_bug, classify_issue
 
@@ -60,8 +60,10 @@ class SruAgent:
         # Releases whose fix is in -proposed are already uploaded; patches matter only for the rest.
         review.pending = self.pending.for_bug(review.bug_id) if self.pending else []
         uploaded = {p.series for p in review.pending}
+        review.queued = self._queued(review.package, [s for s in review.series if s.pending and s.series not in uploaded])
+        uploaded |= {q.series for q in review.queued}
         needs_upload = not review.series or any(s.pending and s.series not in uploaded for s in review.series)
-        if not needs_upload and not review.pending:
+        if not needs_upload and not review.pending and not review.queued:
             return
 
         comments = self.lp.comments(bug)
@@ -76,6 +78,20 @@ class SruAgent:
                 review.blockers += self.llm.analyze(review, comments)
             except Exception as exc:
                 log.warning("LLM analysis of LP #%s failed: %s", review.bug_id, exc)
+
+    def _queued(self, packages: str, series: list[SeriesStatus]) -> list[QueuedUpload]:
+        found = []
+        for s in series:
+            for package in filter(None, packages.split(", ")):
+                try:
+                    uploads = self.lp.queued_uploads(s.codename or s.series, package)
+                except LaunchpadError as exc:
+                    log.warning("upload queue lookup for %s/%s failed: %s", s.series, package, exc)
+                    continue
+                for q in uploads:
+                    q.series = s.series
+                found += uploads
+        return found
 
     def _lint(self, review: BugReview) -> None:
         assert self.linter
