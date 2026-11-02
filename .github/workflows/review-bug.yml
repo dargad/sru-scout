@@ -1,0 +1,52 @@
+name: Review a Launchpad bug
+run-name: "Review LP: #${{ inputs.bug }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      bug:
+        description: Launchpad bug number
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+      - name: Install sru-lint
+        run: sudo snap install --edge sru-lint
+
+      - name: Review the bug
+        id: review
+        env:
+          BUG: ${{ inputs.bug }}
+          SRU_SCOUT_LLM_URL: ${{ vars.SRU_SCOUT_LLM_URL }}
+          SRU_SCOUT_LLM_MODEL: ${{ vars.SRU_SCOUT_LLM_MODEL }}
+          SRU_SCOUT_LLM_API_KEY: ${{ secrets.SRU_SCOUT_LLM_API_KEY }}
+        run: |
+          BUG="${BUG#\#}"
+          if [[ ! "$BUG" =~ ^[0-9]+$ ]]; then
+            echo "::error::The bug input must be a Launchpad bug number"
+            exit 1
+          fi
+          echo "bug=$BUG" >> "$GITHUB_OUTPUT"
+          mkdir -p out
+          # adds --llm only when the LLM repository variables are set
+          uv run sru-scout review --bug "$BUG" -v --html out/index.html --json out/report.json ${SRU_SCOUT_LLM_MODEL:+--llm}
+
+      - uses: actions/upload-artifact@v7
+        if: always() && steps.review.outputs.bug
+        with:
+          name: review-lp-${{ steps.review.outputs.bug }}
+          path: out
+          if-no-files-found: ignore
