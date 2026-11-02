@@ -12,10 +12,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   review:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      bug: ${{ steps.review.outputs.bug }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -50,3 +56,59 @@ jobs:
           name: review-lp-${{ steps.review.outputs.bug }}
           path: out
           if-no-files-found: ignore
+
+  # Separate job so the write token never shares a runner with third-party code or the LLM secret
+  publish:
+    needs: review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}bugs/${{ needs.review.outputs.bug }}/
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Switch to the reports branch
+        run: |
+          if git ls-remote --exit-code --heads origin reports > /dev/null; then
+            git fetch --depth=1 origin reports
+            git switch -C reports FETCH_HEAD
+          else
+            git switch --orphan reports
+          fi
+
+      - name: Clear the previous review of this bug
+        env:
+          BUG: ${{ needs.review.outputs.bug }}
+        run: rm -rf "bugs/${BUG:?}"
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: review-lp-${{ needs.review.outputs.bug }}
+          path: bugs/${{ needs.review.outputs.bug }}
+
+      - name: Commit the review
+        env:
+          BUG: ${{ needs.review.outputs.bug }}
+        run: |
+          {
+            echo '<!doctype html><meta charset="utf-8"><title>Reviewed Launchpad bugs</title><h1>Reviewed Launchpad bugs</h1><ul>'
+            for id in $(find bugs -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -rn); do
+              jq -r --arg id "$id" '.[0] | "<li><a href=\"\($id)/\">LP: #\($id)</a> \(.summary | @html) (\(.level))</li>"' "bugs/$id/report.json"
+            done
+            echo '</ul>'
+          } > bugs/index.html
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Review LP: #$BUG (sru-scout ${GITHUB_SHA::7})"
+          git push -q origin reports
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v5
