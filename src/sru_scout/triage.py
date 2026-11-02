@@ -44,11 +44,12 @@ def classify_bug(bug: BugReview) -> None:
         finish()
         return
 
-    uploaded = {p.series for p in bug.pending}
+    uploaded = {p.series for p in bug.pending} | {q.series for q in bug.queued}
     pending = [s for s in bug.series if s.pending]
     to_upload = [s for s in pending if s.series not in uploaded]
-    if bug.series and not pending and not bug.pending:
-        found.append(Finding("done", "All series are Fix Committed/Released or closed", bug.url))
+    committed = [s for s in bug.series if s.status == "Fix Committed" and not s.eol]
+    if bug.series and not pending and not committed and not bug.pending:
+        found.append(Finding("done", "All series are Fix Released or closed", bug.url))
         level = "done"
         finish()
         return
@@ -70,10 +71,17 @@ def classify_bug(bug: BugReview) -> None:
         if task and task.pending:
             flag("review", f"LP task for {p.series} is '{task.status}' although {where}", task.url)
 
+    in_proposed = {p.series for p in bug.pending}
+    if names := [s.series for s in committed if s.series not in in_proposed]:
+        found.append(Finding("ready", f"Fix Committed: {', '.join(names)}", bug.url))
+    # Nothing to do until the SRU team accepts it into -proposed.
+    for q in bug.queued:
+        found.append(Finding("ready", f"{q.package} {q.version} in the {q.series} upload queue ({q.status}), awaiting SRU team review", q.url))
+
     if any(s.series == "devel" for s in to_upload) and len(bug.series) > 1:
         flag("review", "Development release is not fixed yet", bug.url)
 
-    if not bug.has_sru_template:
+    if (to_upload or not bug.series) and not bug.has_sru_template:
         flag("engineer-attention", "SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete", bug.url)
 
     artifacts = [(p.title, p.series, p.lint, p.web_url) for p in bug.patches]

@@ -114,6 +114,17 @@ class PendingEntry:
 
 
 @dataclass
+class QueuedUpload:
+    """An upload waiting in a release's New/Unapproved queue for the SRU team to accept it into -proposed."""
+
+    series: str  # task series, "devel" for the generic Ubuntu task
+    package: str
+    version: str
+    status: str  # New | Unapproved
+    url: str = ""
+
+
+@dataclass
 class Finding:
     """One reason a bug needs (or does not need) attention, with the page that backs it up."""
 
@@ -134,6 +145,7 @@ class BugReview:
     has_sru_template: bool = True
     series: list[SeriesStatus] = field(default_factory=list)
     pending: list[PendingEntry] = field(default_factory=list)
+    queued: list[QueuedUpload] = field(default_factory=list)
     patches: list[Patch] = field(default_factory=list)
     merge_proposals: list[MergeProposal] = field(default_factory=list)
     blockers: list[Blocker] = field(default_factory=list)

@@ -13,8 +13,26 @@ def lint(*sev):
     return LintResult("u", findings=[LintFinding("R", s, "m") for s in sev])
 
 
-def test_all_fixed_is_done():
-    assert bug([SeriesStatus("noble", "Fix Released"), SeriesStatus("devel", "Fix Committed")]).level == "done"
+def test_all_released_or_closed_is_done():
+    series = [SeriesStatus("noble", "Fix Released"), SeriesStatus("jammy", "Won't Fix"), SeriesStatus("devel", "Invalid")]
+    assert bug(series).level == "done"
+
+
+def test_fix_committed_is_ready():
+    series = [SeriesStatus("noble", "Fix Released"), SeriesStatus("devel", "Fix Committed")]
+    b = bug(series, has_sru_template=False)
+    assert b.level == "ready" and [f.text for f in b.findings] == ["Fix Committed: devel"]
+
+
+def test_all_queued_or_committed_is_ready():
+    from sru_scout.models import QueuedUpload
+
+    series = [SeriesStatus("noble", "In Progress"), SeriesStatus("jammy", "Fix Committed")]
+    b = bug(series, queued=[QueuedUpload("noble", "pkg", "1.0", "Unapproved", "q")])
+    assert b.level == "ready" and any("upload queue" in f.text for f in b.findings)
+    issue = IssueReview("SI-1", "u", "s", bugs=[b])
+    classify_issue(issue)
+    assert "Unapproved queue" in render_html([issue])
 
 
 def test_eol_pending_is_ignored():
