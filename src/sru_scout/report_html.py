@@ -54,7 +54,6 @@ def series_rows(bug: BugReview) -> list[dict[str, Any]]:
         if name not in seen:
             rows.append({"series": name, "status": "no task", "state": "closed", "url": "", "proposed": entry})
     for row in rows:
-        row["queued"] = [q for q in bug.queued if q.series == row["series"]]
         row["artifacts"] = ["patch" for p in bug.patches if row["series"] in p.series]
         row["artifacts"] += [f"MP ({mp.status})" for mp in bug.merge_proposals if mp.series == row["series"]]
     return rows

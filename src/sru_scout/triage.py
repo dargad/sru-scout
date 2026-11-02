@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import re
-
 from sru_scout.models import LEVELS, BugReview, Finding, IssueReview
 from sru_scout.pending import REPORT_URL
 
@@ -20,8 +18,6 @@ _PENDING_FLAGS = {
 
 # Tag-based blockers already covered by the corresponding pending-sru flag: (flag, blocker summary prefix)
 _TAG_DUPLICATES = (("verification-failed", "Verification failed"), ("block-proposed", "Release blocked by SRU team"))
-
-_VERIFICATION_NEEDED = re.compile(r"^verification-needed(-.+)?$")
 
 
 def _worst(*levels: str) -> str:
@@ -48,13 +44,10 @@ def classify_bug(bug: BugReview) -> None:
         finish()
         return
 
-    uploaded = {p.series for p in bug.pending} | {q.series for q in bug.queued}
+    uploaded = {p.series for p in bug.pending}
     pending = [s for s in bug.series if s.pending]
     to_upload = [s for s in pending if s.series not in uploaded]
-    verification_tags = [t for t in bug.tags if _VERIFICATION_NEEDED.match(t)]
-    if len(verification_tags) > 1 and "verification-needed" in verification_tags:
-        verification_tags.remove("verification-needed")  # the plain tag only accompanies the per-series ones
-    if bug.series and not pending and not bug.pending and not verification_tags:
+    if bug.series and not pending and not bug.pending:
         found.append(Finding("done", "All series are Fix Committed/Released or closed", bug.url))
         level = "done"
         finish()
@@ -72,22 +65,10 @@ def classify_bug(bug: BugReview) -> None:
         if p.builds_not_ok:
             flag("engineer-attention", f"{where}: builds not OK ({', '.join(p.builds_not_ok)})", report_url)
         if not p.flags:
-            tag = f"verification-needed-{p.series}"
-            if tag in verification_tags:
-                verification_tags.remove(tag)
-                flag("engineer-attention", f"{where}: verification needed ({tag})", bug.url)
-            else:
-                found.append(Finding("ready", f"{where}: awaiting verification", report_url))
+            found.append(Finding("ready", f"{where}: awaiting verification", report_url))
         task = next((s for s in bug.series if s.series == p.series), None)
         if task and task.pending:
             flag("review", f"LP task for {p.series} is '{task.status}' although {where}", task.url)
-
-    for tag in verification_tags:
-        flag("engineer-attention", f"Verification needed ({tag})", bug.url)
-
-    # Nothing to do until the SRU team accepts it into -proposed.
-    for q in bug.queued:
-        found.append(Finding("ready", f"{q.package} {q.version} in the {q.series} upload queue ({q.status}), awaiting SRU team review", q.url))
 
     if any(s.series == "devel" for s in to_upload) and len(bug.series) > 1:
         flag("review", "Development release is not fixed yet", bug.url)
@@ -138,7 +119,7 @@ def classify_bug(bug: BugReview) -> None:
             resolved[0].url,
         )
 
-    # Nothing left for the engineer; the sponsor reviews and uploads what is neither queued nor in -proposed.
+    # Nothing left for the engineer; uploads still in the unapproved queue look the same as not uploaded.
     if to_upload and artifacts and level not in ("blocked", "engineer-attention"):
         series = ", ".join(s.series for s in to_upload)
         flag("sponsor-attention", f"Ready for a sponsor to review and upload: {series}", bug.url)
