@@ -48,15 +48,16 @@ def classify_bug(bug: BugReview) -> None:
     pending = [s for s in bug.series if s.pending]
     to_upload = [s for s in pending if s.series not in uploaded]
     committed = [s for s in bug.series if s.status == "Fix Committed" and not s.eol]
-    if bug.series and not pending and not committed and not bug.pending:
+    to_verify = [t for t in bug.tags if t.startswith("verification-needed-")]
+    if not to_verify and "verification-needed" in bug.tags:
+        to_verify = ["verification-needed"]
+    if bug.series and not pending and not committed and not bug.pending and not to_verify:
         found.append(Finding("done", "All series are Fix Released or closed", bug.url))
         level = "done"
         finish()
         return
     if not bug.series:
         flag("engineer-attention", "Bug has no Ubuntu package tasks", bug.url)
-
-    to_verify = [t for t in bug.tags if t.startswith("verification-needed-")]
 
     def verification_tag(*names: str) -> str | None:
         tag = next((t for t in to_verify if t.removeprefix("verification-needed-") in names), None)

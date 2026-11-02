@@ -39,6 +39,9 @@ def test_fix_committed_with_verification_needed_tag_needs_engineer():
         "pkg 1.0 in noble-proposed, 2 days: verification needed (verification-needed-noble)"
     ]
     assert bug(fixed, tags=["verification-done-noble"]).level == "ready"
+    assert bug(fixed, tags=["verification-needed"]).level == "engineer-attention"
+    released = [SeriesStatus("noble", "Fix Released")]
+    assert bug(released, tags=["verification-needed-noble"]).level == "engineer-attention"
 
 
 def test_all_queued_or_committed_is_ready():
