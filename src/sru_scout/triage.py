@@ -56,6 +56,14 @@ def classify_bug(bug: BugReview) -> None:
     if not bug.series:
         flag("engineer-attention", "Bug has no Ubuntu package tasks", bug.url)
 
+    to_verify = [t for t in bug.tags if t.startswith("verification-needed-")]
+
+    def verification_tag(*names: str) -> str | None:
+        tag = next((t for t in to_verify if t.removeprefix("verification-needed-") in names), None)
+        if tag:
+            to_verify.remove(tag)
+        return tag
+
     for p in bug.pending:
         age = f", {p.days} days" if p.days is not None else ""
         where = f"{p.package} {p.version} in {p.series}-proposed{age}"
@@ -66,14 +74,27 @@ def classify_bug(bug: BugReview) -> None:
         if p.builds_not_ok:
             flag("engineer-attention", f"{where}: builds not OK ({', '.join(p.builds_not_ok)})", report_url)
         if not p.flags:
-            found.append(Finding("ready", f"{where}: awaiting verification", report_url))
+            if tag := verification_tag(p.series):
+                flag("engineer-attention", f"{where}: verification needed ({tag})", bug.url)
+            else:
+                found.append(Finding("ready", f"{where}: awaiting verification", report_url))
         task = next((s for s in bug.series if s.series == p.series), None)
         if task and task.pending:
             flag("review", f"LP task for {p.series} is '{task.status}' although {where}", task.url)
 
     in_proposed = {p.series for p in bug.pending}
-    if names := [s.series for s in committed if s.series not in in_proposed]:
+    names = []
+    for s in committed:
+        if s.series in in_proposed:
+            continue
+        if tag := verification_tag(s.series, s.codename):
+            flag("engineer-attention", f"Fix Committed in {s.series}: verification needed ({tag})", bug.url)
+        else:
+            names.append(s.series)
+    if names:
         found.append(Finding("ready", f"Fix Committed: {', '.join(names)}", bug.url))
+    for tag in to_verify:
+        flag("engineer-attention", f"Verification needed ({tag})", bug.url)
     # Nothing to do until the SRU team accepts it into -proposed.
     for q in bug.queued:
         found.append(Finding("ready", f"{q.package} {q.version} in the {q.series} upload queue ({q.status}), awaiting SRU team review", q.url))

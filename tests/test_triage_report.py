@@ -24,6 +24,23 @@ def test_fix_committed_is_ready():
     assert b.level == "ready" and [f.text for f in b.findings] == ["Fix Committed: devel"]
 
 
+def test_fix_committed_with_verification_needed_tag_needs_engineer():
+    from sru_scout.models import PendingEntry
+
+    fixed = [SeriesStatus("noble", "Fix Committed"), SeriesStatus("jammy", "Fix Committed")]
+    tags = ["verification-needed", "verification-needed-noble"]
+    b = bug(fixed, tags=tags)
+    assert b.level == "engineer-attention" and [f.text for f in b.findings] == [
+        "Fix Committed in noble: verification needed (verification-needed-noble)",
+        "Fix Committed: jammy",
+    ]
+    b = bug(fixed[:1], pending=[PendingEntry(1, "noble", "pkg", "1.0", 2)], tags=tags)
+    assert b.level == "engineer-attention" and [f.text for f in b.findings] == [
+        "pkg 1.0 in noble-proposed, 2 days: verification needed (verification-needed-noble)"
+    ]
+    assert bug(fixed, tags=["verification-done-noble"]).level == "ready"
+
+
 def test_all_queued_or_committed_is_ready():
     from sru_scout.models import QueuedUpload
 
