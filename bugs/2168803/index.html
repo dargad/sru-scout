@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ubuntu Stable Release Updates</title>
+<style>
+  :root {
+    --aubergine: #2c001e; --orange: #e95420; --warm-grey: #aea79f; --light: #f7f7f7; --border: #d9d9d9;
+    --text: #111; --muted: #666;
+    --blocked: #c7162b; --engineer-attention: #e95420; --sponsor-attention: #772953;
+    --review: #f99b0f; --ready: #0e8420; --done: #8a8a8a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 "Ubuntu", "Ubuntu Sans", "Helvetica Neue", Arial, sans-serif; color: var(--text); background: #fff; }
+  a { color: #0066cc; text-decoration: none; } a:hover { text-decoration: underline; }
+  code { font-family: "Ubuntu Mono", "DejaVu Sans Mono", monospace; font-size: .85em; background: var(--light); padding: 0 .3em; border-radius: 2px; }
+  .muted { color: var(--muted); }
+
+  header.top { background: var(--aubergine); color: #fff; border-bottom: 4px solid var(--orange); }
+  header.top .inner { max-width: 1200px; margin: 0 auto; padding: 1.2rem 1.5rem; display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+  header.top h1 { margin: 0; font-size: 1.6rem; font-weight: 300; letter-spacing: .01em; }
+  header.top h1 b { font-weight: 500; }
+  header.top .meta { color: #d8c5cf; font-size: .85rem; margin-left: auto; }
+  main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+  h2 { font-size: 1.15rem; font-weight: 400; margin: 2rem 0 .6rem; padding-bottom: .3rem; border-bottom: 1px solid var(--border); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .5rem; background: #fff; padding: .75rem 0; z-index: 2; }
+  @media (min-width: 900px) { .tiles { position: sticky; top: 0; } }
+  .tile { border: 1px solid var(--border); border-top: 4px solid var(--c, var(--warm-grey)); background: #fff; padding: .3rem .8rem; text-align: left; cursor: pointer; font: inherit; border-radius: 2px; }
+  .tile:hover, .tile.active { background: var(--light); box-shadow: inset 0 0 0 1px var(--c, var(--warm-grey)); }
+  .tile .n { font-size: 1.4rem; font-weight: 300; line-height: 1.1; display: block; }
+  .tile .l { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+
+  .lvl { --c: var(--done); } .lvl.blocked { --c: var(--blocked); }
+  .lvl.engineer-attention { --c: var(--engineer-attention); } .lvl.sponsor-attention { --c: var(--sponsor-attention); }
+  .lvl.review { --c: var(--review); } .lvl.ready { --c: var(--ready); } .lvl.done { --c: var(--done); }
+  .tile.blocked { --c: var(--blocked); } .tile.engineer-attention { --c: var(--engineer-attention); }
+  .tile.sponsor-attention { --c: var(--sponsor-attention); } .tile.review { --c: var(--review); }
+  .tile.ready { --c: var(--ready); } .tile.done { --c: var(--done); }
+  .badge { display: inline-block; min-width: 5.6rem; text-align: center; font-size: .7rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; padding: .1rem .5rem; color: #fff; background: var(--c); border-radius: 2px; }
+  .badge.review { color: #111; }
+
+  table { border-collapse: collapse; width: 100%; }
+  th { text-align: left; font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 2px solid var(--border); padding: .35rem .6rem; }
+  td { border-bottom: 1px solid var(--border); padding: .45rem .6rem; vertical-align: top; overflow-wrap: anywhere; }
+  td.nowrap { white-space: nowrap; overflow-wrap: normal; }
+  table.overview tr:hover td { background: var(--light); }
+  table.overview td.lvlcell { border-left: 4px solid var(--c); white-space: nowrap; }
+  .more { color: var(--muted); font-size: .85rem; }
+
+  details.card { border: 1px solid var(--border); border-left: 4px solid var(--c); margin: .6rem 0; border-radius: 2px; }
+  details.card > summary { padding: .6rem .9rem; cursor: pointer; display: flex; gap: .75rem; align-items: baseline; flex-wrap: wrap; list-style: none; }
+  details.card > summary::-webkit-details-marker { display: none; }
+  details.card > summary::before { content: "\25B8"; color: var(--muted); }
+  details.card[open] > summary::before { content: "\25BE"; }
+  details.card[open] > summary { background: var(--light); }
+  .card .body { padding: .25rem 1rem 1rem; }
+  .bug h3 { font-size: 1.05rem; font-weight: 400; margin: 1rem 0 .4rem; }
+  .bug h3 .pkg { font-weight: 500; }
+  .bug h4 { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 1rem 0 .3rem; }
+
+  ul.findings { list-style: none; margin: 0; padding: 0; }
+  ul.findings li { padding: .25rem 0 .25rem 1.4rem; position: relative; overflow-wrap: anywhere; }
+  ul.findings li::before { content: ""; position: absolute; left: .3rem; top: .75rem; width: .6rem; height: .6rem; border-radius: 50%; background: var(--c); }
+  ul.findings li.ready::before, ul.findings li.done::before { background: transparent; border: 2px solid var(--c); }
+  ul.findings a { color: inherit; border-bottom: 1px dotted var(--muted); } ul.findings a:hover { text-decoration: none; border-bottom-style: solid; }
+  ul.findings li.ready, ul.findings li.done { color: var(--muted); }
+
+  .chip { display: inline-block; font-size: .8rem; padding: 0 .5rem; border-radius: 10px; background: var(--light); border: 1px solid var(--border); margin-right: .25rem; }
+  .st-fixed { color: var(--ready); font-weight: 500; } .st-pending { color: #b34700; font-weight: 500; } .st-muted { color: var(--muted); }
+  .flag { font-size: .75rem; padding: 0 .4rem; border-radius: 2px; background: var(--light); border: 1px solid var(--border); margin-right: .2rem; }
+  .flag.bad { background: #fbe9eb; border-color: var(--blocked); color: var(--blocked); }
+  .flag.warn { background: #fdeee8; border-color: var(--orange); color: #b34700; }
+  .flag.good { background: #e8f3ea; border-color: var(--ready); color: var(--ready); }
+
+  .rel { display: inline-block; min-width: 1.3rem; padding: 0 .25rem; margin-right: .15rem; text-align: center; font-size: .75rem; font-weight: 500; line-height: 1.25rem; border: 1px solid transparent; border-radius: 3px; color: #fff; cursor: default; }
+  .rel.released { background: var(--ready); } .rel.committed { background: #0b7285; } .rel.progress { background: var(--review); color: #111; }
+  .rel.open { background: #fff; border-color: var(--warm-grey); color: var(--text); }
+  .rel.incomplete { background: #fff; border-color: var(--blocked); color: var(--blocked); }
+  .rel.closed { background: var(--light); border-color: var(--border); color: var(--warm-grey); text-decoration: line-through; }
+  .rel.eol { opacity: .4; }
+  .legend { font-size: .8rem; color: var(--muted); margin: 0 0 .6rem; } .legend .rel { margin-right: .35rem; }
+
+  .artifact { margin: .35rem 0; }
+  .artifact summary { cursor: pointer; }
+  .pill { font-size: .75rem; font-weight: 500; padding: 0 .45rem; border-radius: 10px; color: #fff; margin-left: .25rem; }
+  .pill.error { background: var(--blocked); } .pill.warning { background: var(--review); color: #111; } .pill.info { background: var(--warm-grey); }
+  .pill.ok { background: var(--ready); }
+  table.lint { margin: .3rem 0 .6rem 1rem; width: calc(100% - 1rem); font-size: .9rem; }
+  .sev-error { color: var(--blocked); font-weight: 500; } .sev-warning { color: #b34700; } .sev-info { color: var(--muted); }
+
+  .done-list { columns: 2; column-gap: 2rem; font-size: .9rem; list-style: none; padding: 0; }
+  .done-list li { break-inside: avoid; padding: .15rem 0; }
+  .toolbar { display: flex; justify-content: flex-end; gap: .5rem; margin: .5rem 0; }
+  .toolbar button { font: inherit; font-size: .85rem; padding: .2rem .8rem; border: 1px solid var(--border); background: #fff; border-radius: 2px; cursor: pointer; }
+  .toolbar button:hover { background: var(--light); }
+  [hidden] { display: none !important; }
+  @media (max-width: 700px) { .done-list { columns: 1; } }
+</style>
+</head>
+<body>
+
+
+<header class="top"><div class="inner">
+  <h1><b>SRU</b> review</h1>
+  <span class="muted" style="color:#d8c5cf">Ubuntu Stable Release Updates</span>
+  <span class="meta">Generated 2026-11-02 15:43 UTC &middot; 1 card(s)</span>
+</div></header>
+
+<main>
+  <div class="tiles" role="toolbar" aria-label="Filter by status">
+    <button class="tile active" data-level="all" style="--c: var(--aubergine)"><span class="n">1</span><span class="l">All cards</span></button>
+    
+    <button class="tile blocked" data-level="blocked"><span class="n">1</span><span class="l">Blocked</span></button>
+    
+    <button class="tile engineer-attention" data-level="engineer-attention"><span class="n">0</span><span class="l">Engineer</span></button>
+    
+    <button class="tile sponsor-attention" data-level="sponsor-attention"><span class="n">0</span><span class="l">Sponsor</span></button>
+    
+    <button class="tile review" data-level="review"><span class="n">0</span><span class="l">To review</span></button>
+    
+    <button class="tile ready" data-level="ready"><span class="n">0</span><span class="l">Ready</span></button>
+    
+    <button class="tile done" data-level="done"><span class="n">0</span><span class="l">Done</span></button>
+    
+  </div>
+
+  
+  <h2>Where to look</h2>
+  <p class="legend">Releases:
+    <span class="rel released">Fix Released</span><span class="rel committed">Fix Committed</span><span class="rel progress">In Progress</span><span class="rel incomplete">Incomplete</span><span class="rel open">New / Confirmed / Triaged</span><span class="rel closed">Won't Fix / Invalid</span><span class="rel open eol">EOL</span>
+  </p>
+  <table class="overview">
+    <tr><th>Status</th><th>Jira</th><th>Launchpad bug</th><th>Package</th><th>Releases</th><th>Main issue</th></tr>
+    
+    <tr class="row lvl blocked" data-level="blocked">
+      <td class="lvlcell"><span class="badge lvl blocked">Blocked</span></td>
+      <td class="nowrap"><a href="#card-LP#2168803">LP#2168803</a></td>
+      <td>
+        <div><a href="https://bugs.launchpad.net/bugs/2168803">LP: #2168803</a> QEMU 8.2.2 guests crash by exhausting vm.max_map_count with coroutines</div>
+        
+      </td>
+      <td class="nowrap"><div><code>qemu</code></div></td>
+      <td class="nowrap"><div><span class="rel progress" title="tenacious (devel) 27.04: In Progress">T</span><span class="rel progress" title="tenacious 27.04: In Progress">T</span><span class="rel progress" title="stonking 26.10: In Progress">S</span><span class="rel progress" title="resolute 26.04: In Progress">R</span><span class="rel progress" title="noble 24.04: In Progress">N</span></div></td>
+      <td>
+        <div>The backported patches parse /proc/sys/vm/max_map_count incorrectly, so the default value is always used and the system-limit awareness the fix relies on does… <span class="more">(+12 more)</span></div>
+      </td>
+    </tr>
+    
+  </table>
+
+  <h2>Details</h2>
+  <div class="toolbar"><button id="expand">Expand all</button><button id="collapse">Collapse all</button></div>
+  
+  <details class="card lvl blocked" id="card-LP#2168803" data-level="blocked">
+    <summary>
+      <span class="badge lvl blocked">Blocked</span>
+      <strong><a href="https://bugs.launchpad.net/bugs/2168803">LP#2168803</a></strong>
+      <span>QEMU 8.2.2 guests crash by exhausting vm.max_map_count with coroutines</span>
+      <span class="muted"></span>
+    </summary>
+    <div class="body">
+      
+      <section class="bug">
+        <h3><a href="https://bugs.launchpad.net/bugs/2168803">LP: #2168803</a> &middot; <span class="pkg">qemu</span> &middot; QEMU 8.2.2 guests crash by exhausting vm.max_map_count with coroutines</h3>
+        
+
+        <h4>Issues</h4>
+        <ul class="findings">
+          <li class="lvl blocked"><a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397413">The backported patches parse /proc/sys/vm/max_map_count incorrectly, so the default value is always used and the system-limit awareness the fix relies on does not work. The corrected upstream patch is not yet merged, and it is unclear whether it is included in the SRU.</a></li><li class="lvl blocked"><a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397413">The default returned by get_global_pool_hard_max_size is UINT_MAX, which effectively removes the cap. A conservative default such as 65530 is needed. Combined with the parsing bug, the shipped fix would not enforce any hard limit. This second fix is also unmerged upstream.</a></li><li class="lvl blocked"><a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397571">The patch reads /proc/sys/vm/max_map_count, which needs a libvirt AppArmor rule. Without that rule, confined guests cannot read the file. A versioned Breaks/Depends in qemu is also needed so libvirt is upgraded together with qemu. Neither is confirmed done; the libvirt fix is in a separate bug (2170732).</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/15">The fix only reduces the chance of hitting the VMA limit. With very many vCPUs or threads, QEMU can still crash (reproduced at 255 vCPUs with the noble limit of 1048576). The SRU must be described as mitigation, not a full fix.</a></li><li class="lvl engineer-attention"><a href="https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/21">The post-fix reproducer still crashes with 255 vCPUs under the noble limit, and a peak of 509362 VMAs was seen with the overcommitted test plan. The test plan and Impact section changed repeatedly, so verification may be unclear and the impact on real noble users is debatable, because noble&#39;s higher default limit already avoids the crash in most cases.</a></li><li class="lvl engineer-attention"><a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397571">The upstream follow-up patches (the parsing fix and the lower default max pool size) were submitted but not yet merged. The upstream status and the reason for the delay are unanswered, and the SRU diverges from upstream until they land.</a></li><li class="lvl sponsor-attention"><a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759">sru-lint did not run on merge proposal 512759 (ubuntu/noble-devel): sru-lint timed out after 180s</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/bugs/2168803">Development release is not fixed yet</a></li><li class="lvl review"><a href="https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513965">sru-lint: 2 warning(s) in merge proposal 513965 (ubuntu/tenacious-devel)</a></li><li class="lvl review"><a href="https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513964">sru-lint: 2 warning(s) in merge proposal 513964 (ubuntu/stonking-devel)</a></li><li class="lvl review"><a href="https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513945">sru-lint: 2 warning(s) in merge proposal 513945 (ubuntu/resolute-devel)</a></li><li class="lvl review"><a href="https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/7">1 earlier concern(s) in comments look resolved by later comments; skim to confirm</a></li><li class="lvl ready"><a href="https://launchpad.net/ubuntu/noble/+queue?queue_state=1&amp;queue_text=qemu">qemu 1:8.2.2+ds-0ubuntu1.20 in the noble upload queue (Unapproved), awaiting SRU team review</a></li>
+        </ul>
+
+        
+        
+        <h4>Series</h4>
+        <table>
+          <tr><th>Series</th><th>Launchpad</th><th>Queue / -proposed</th><th>Patch / MP</th></tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803">devel</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><span class="muted">&ndash;</span></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/noble/+source/qemu/+bug/2168803">noble</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <div><a href="https://launchpad.net/ubuntu/noble/+queue?queue_state=1&amp;queue_text=qemu">1:8.2.2+ds-0ubuntu1.20</a> <span class="muted">&middot; Unapproved queue</span></div>
+              
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/resolute/+source/qemu/+bug/2168803">resolute</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/stonking/+source/qemu/+bug/2168803">stonking</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+          <tr>
+            <td><a href="https://bugs.launchpad.net/ubuntu/tenacious/+source/qemu/+bug/2168803">tenacious</a></td>
+            <td class="st-pending">In Progress</td>
+            <td>
+              <span class="muted">&ndash;</span>
+            </td>
+            <td><div>MP (Needs review)</div></td>
+          </tr>
+          
+        </table>
+        
+
+        
+        <h4>sru-lint</h4>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513965">MP refs/heads/ubuntu/tenacious-devel → refs/heads/ubuntu/tenacious-devel</a>
+            <code>tenacious</code> 
+            <span class="muted">Needs review</span>
+            
+              <span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>PATCH006</td>
+                <td>Forwarded field should be either &#34;no&#34;, &#34;not-needed&#34; or a valid URL</td><td class="muted">debian/patches/ubuntu/lp2168803/0001-trim-sysctl-max-map-count-newline.patch:20</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>PATCH006</td>
+                <td>Forwarded field should be either &#34;no&#34;, &#34;not-needed&#34; or a valid URL</td><td class="muted">debian/patches/ubuntu/lp2168803/0002-reduce-default-idle-pool.patch:24</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513964">MP refs/heads/ubuntu/stonking-devel → refs/heads/ubuntu/stonking-devel</a>
+            <code>stonking</code> 
+            <span class="muted">Needs review</span>
+            
+              <span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>PATCH006</td>
+                <td>Forwarded field should be either &#34;no&#34;, &#34;not-needed&#34; or a valid URL</td><td class="muted">debian/patches/ubuntu/lp2168803/0001-trim-sysctl-max-map-count-newline.patch:20</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>PATCH006</td>
+                <td>Forwarded field should be either &#34;no&#34;, &#34;not-needed&#34; or a valid URL</td><td class="muted">debian/patches/ubuntu/lp2168803/0002-reduce-default-idle-pool.patch:24</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513945">MP refs/heads/ubuntu/resolute-devel → refs/heads/ubuntu/resolute-devel</a>
+            <code>resolute</code> 
+            <span class="muted">Needs review</span>
+            
+              <span class="pill warning">2 warning</span>
+            
+          </summary>
+          
+          
+          <table class="lint">
+            
+            <tr><td class="sev-warning">warning</td><td>PATCH006</td>
+                <td>Forwarded field should be either &#34;no&#34;, &#34;not-needed&#34; or a valid URL</td><td class="muted">debian/patches/ubuntu/lp2168803/0001-trim-sysctl-max-map-count-newline.patch:20</td></tr>
+            
+            <tr><td class="sev-warning">warning</td><td>PATCH006</td>
+                <td>Forwarded field should be either &#34;no&#34;, &#34;not-needed&#34; or a valid URL</td><td class="muted">debian/patches/ubuntu/lp2168803/0002-reduce-default-idle-pool.patch:24</td></tr>
+            
+          </table>
+          
+        </details>
+        
+        
+        <details class="artifact">
+          <summary>
+            <a href="https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759">MP refs/heads/ubuntu/noble-devel-lp2168803 → refs/heads/ubuntu/noble-devel</a>
+            <code>noble</code> 
+            <span class="muted">Needs review</span>
+            <span class="pill error">failed</span>
+            
+          </summary>
+          <p class="sev-error">sru-lint timed out after 180s</p>
+          
+        </details>
+        
+        
+      </section>
+      
+    </div>
+  </details>
+  
+  
+
+  
+</main>
+
+<script>
+(function () {
+  var tiles = document.querySelectorAll('.tile');
+  var items = document.querySelectorAll('[data-level]:not(.tile)');
+  tiles.forEach(function (tile) {
+    tile.addEventListener('click', function () {
+      tiles.forEach(function (t) { t.classList.remove('active'); });
+      tile.classList.add('active');
+      items.forEach(function (el) { el.hidden = !(tile.dataset.level === 'all' || el.dataset.level === tile.dataset.level); });
+    });
+  });
+  function openFromHash() {
+    var el = location.hash && document.querySelector(location.hash);
+    if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); }
+  }
+  window.addEventListener('hashchange', openFromHash); openFromHash();
+  function setAll(open) { document.querySelectorAll('details.card').forEach(function (d) { d.open = open; }); }
+  var e = document.getElementById('expand'), c = document.getElementById('collapse');
+  if (e) { e.onclick = function () { setAll(true); }; c.onclick = function () { setAll(false); }; }
+})();
+</script>
+</body>
+</html>

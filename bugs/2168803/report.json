@@ -1,0 +1,368 @@
+[
+  {
+    "key": "LP#2168803",
+    "url": "https://bugs.launchpad.net/bugs/2168803",
+    "summary": "QEMU 8.2.2 guests crash by exhausting vm.max_map_count with coroutines",
+    "status": "",
+    "assignee": "",
+    "bugs": [
+      {
+        "bug_id": 2168803,
+        "url": "https://bugs.launchpad.net/bugs/2168803",
+        "title": "QEMU 8.2.2 guests crash by exhausting vm.max_map_count with coroutines",
+        "package": "qemu",
+        "accessible": true,
+        "error": "",
+        "tags": [],
+        "has_sru_template": true,
+        "series": [
+          {
+            "series": "devel",
+            "status": "In Progress",
+            "importance": "Low",
+            "assignee": "kicchou",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803",
+            "eol": false,
+            "codename": "tenacious",
+            "version": "27.04"
+          },
+          {
+            "series": "noble",
+            "status": "In Progress",
+            "importance": "High",
+            "assignee": "whershberger",
+            "url": "https://bugs.launchpad.net/ubuntu/noble/+source/qemu/+bug/2168803",
+            "eol": false,
+            "codename": "noble",
+            "version": "24.04"
+          },
+          {
+            "series": "resolute",
+            "status": "In Progress",
+            "importance": "Low",
+            "assignee": "kicchou",
+            "url": "https://bugs.launchpad.net/ubuntu/resolute/+source/qemu/+bug/2168803",
+            "eol": false,
+            "codename": "resolute",
+            "version": "26.04"
+          },
+          {
+            "series": "stonking",
+            "status": "In Progress",
+            "importance": "Low",
+            "assignee": "kicchou",
+            "url": "https://bugs.launchpad.net/ubuntu/stonking/+source/qemu/+bug/2168803",
+            "eol": false,
+            "codename": "stonking",
+            "version": "26.10"
+          },
+          {
+            "series": "tenacious",
+            "status": "In Progress",
+            "importance": "Low",
+            "assignee": "kicchou",
+            "url": "https://bugs.launchpad.net/ubuntu/tenacious/+source/qemu/+bug/2168803",
+            "eol": false,
+            "codename": "tenacious",
+            "version": "27.04"
+          }
+        ],
+        "pending": [],
+        "queued": [
+          {
+            "series": "noble",
+            "package": "qemu",
+            "version": "1:8.2.2+ds-0ubuntu1.20",
+            "status": "Unapproved",
+            "url": "https://launchpad.net/ubuntu/noble/+queue?queue_state=1&queue_text=qemu"
+          }
+        ],
+        "patches": [],
+        "merge_proposals": [
+          {
+            "web_url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513965",
+            "status": "Needs review",
+            "source": "refs/heads/ubuntu/tenacious-devel",
+            "target": "refs/heads/ubuntu/tenacious-devel",
+            "series": "tenacious",
+            "diff_url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513965/+preview-diff/1147138/+files/preview.diff",
+            "votes": [],
+            "comments": [],
+            "lint": {
+              "url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513965/+preview-diff/1147138/+files/preview.diff",
+              "ran": true,
+              "error": "",
+              "findings": [
+                {
+                  "rule_id": "PATCH006",
+                  "severity": "warning",
+                  "message": "Forwarded field should be either \"no\", \"not-needed\" or a valid URL",
+                  "path": "debian/patches/ubuntu/lp2168803/0001-trim-sysctl-max-map-count-newline.patch",
+                  "line": 20,
+                  "doc_url": ""
+                },
+                {
+                  "rule_id": "PATCH006",
+                  "severity": "warning",
+                  "message": "Forwarded field should be either \"no\", \"not-needed\" or a valid URL",
+                  "path": "debian/patches/ubuntu/lp2168803/0002-reduce-default-idle-pool.patch",
+                  "line": 24,
+                  "doc_url": ""
+                }
+              ]
+            }
+          },
+          {
+            "web_url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513964",
+            "status": "Needs review",
+            "source": "refs/heads/ubuntu/stonking-devel",
+            "target": "refs/heads/ubuntu/stonking-devel",
+            "series": "stonking",
+            "diff_url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513964/+preview-diff/1147137/+files/preview.diff",
+            "votes": [],
+            "comments": [],
+            "lint": {
+              "url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513964/+preview-diff/1147137/+files/preview.diff",
+              "ran": true,
+              "error": "",
+              "findings": [
+                {
+                  "rule_id": "PATCH006",
+                  "severity": "warning",
+                  "message": "Forwarded field should be either \"no\", \"not-needed\" or a valid URL",
+                  "path": "debian/patches/ubuntu/lp2168803/0001-trim-sysctl-max-map-count-newline.patch",
+                  "line": 20,
+                  "doc_url": ""
+                },
+                {
+                  "rule_id": "PATCH006",
+                  "severity": "warning",
+                  "message": "Forwarded field should be either \"no\", \"not-needed\" or a valid URL",
+                  "path": "debian/patches/ubuntu/lp2168803/0002-reduce-default-idle-pool.patch",
+                  "line": 24,
+                  "doc_url": ""
+                }
+              ]
+            }
+          },
+          {
+            "web_url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513945",
+            "status": "Needs review",
+            "source": "refs/heads/ubuntu/resolute-devel",
+            "target": "refs/heads/ubuntu/resolute-devel",
+            "series": "resolute",
+            "diff_url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513945/+preview-diff/1147114/+files/preview.diff",
+            "votes": [],
+            "comments": [],
+            "lint": {
+              "url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513945/+preview-diff/1147114/+files/preview.diff",
+              "ran": true,
+              "error": "",
+              "findings": [
+                {
+                  "rule_id": "PATCH006",
+                  "severity": "warning",
+                  "message": "Forwarded field should be either \"no\", \"not-needed\" or a valid URL",
+                  "path": "debian/patches/ubuntu/lp2168803/0001-trim-sysctl-max-map-count-newline.patch",
+                  "line": 20,
+                  "doc_url": ""
+                },
+                {
+                  "rule_id": "PATCH006",
+                  "severity": "warning",
+                  "message": "Forwarded field should be either \"no\", \"not-needed\" or a valid URL",
+                  "path": "debian/patches/ubuntu/lp2168803/0002-reduce-default-idle-pool.patch",
+                  "line": 24,
+                  "doc_url": ""
+                }
+              ]
+            }
+          },
+          {
+            "web_url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759",
+            "status": "Needs review",
+            "source": "refs/heads/ubuntu/noble-devel-lp2168803",
+            "target": "refs/heads/ubuntu/noble-devel",
+            "series": "noble",
+            "diff_url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/+preview-diff/1144979/+files/preview.diff",
+            "votes": [],
+            "comments": [
+              {
+                "author": "whershberger",
+                "date": "2026-10-21T17:50:38.342262+00:00",
+                "body": "There are two standing issues with these patches:\n\n- get_global_pool_hard_max_size parses /proc/sys/vm/max_map_count incorrectly, resulting in the default value being used unconditionally\n- The default value returned by get_global_pool_hard_max_size is UINT_MAX; a better/conservative choice would be the kernel's default max_map_count (65530)\n\nWe've submitted upstream patches to resolve both of these issues; neither have been merged to qemu's master yet.\n\nhttps://lists.gnu.org/archive/html/qemu-devel/2026-10/msg04337.html",
+                "source": "mp",
+                "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397413",
+                "vote": ""
+              },
+              {
+                "author": "ahasenack",
+                "date": "2026-10-22T19:05:09.683479+00:00",
+                "body": "> We've submitted upstream patches to resolve both of these issues; neither have been merged to qemu's \n> master yet.\n\nAre they just lacking reviews in the mailing list? Or are there other concerns?\n\nI understand we also need an apparmor patch for libvirt, and a versioned breaks in qemu to force the upgrade of libvirt if it's installed, right?",
+                "source": "mp",
+                "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397571",
+                "vote": ""
+              }
+            ],
+            "lint": {
+              "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/+preview-diff/1144979/+files/preview.diff",
+              "ran": false,
+              "error": "sru-lint timed out after 180s",
+              "findings": []
+            }
+          }
+        ],
+        "blockers": [
+          {
+            "severity": "concern",
+            "summary": "Regression mentioned: \"\u2026to 64. This could produce a performance regression for some users, as the performance bottleneck of this cap was significant enoug\u2026\" (whershberger)",
+            "source": "comment",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/7",
+            "maybe_resolved": true
+          },
+          {
+            "severity": "blocker",
+            "summary": "The backported patches parse /proc/sys/vm/max_map_count incorrectly, so the default value is always used and the system-limit awareness the fix relies on does not work. The corrected upstream patch is not yet merged, and it is unclear whether it is included in the SRU.",
+            "source": "llm",
+            "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397413",
+            "maybe_resolved": false
+          },
+          {
+            "severity": "blocker",
+            "summary": "The default returned by get_global_pool_hard_max_size is UINT_MAX, which effectively removes the cap. A conservative default such as 65530 is needed. Combined with the parsing bug, the shipped fix would not enforce any hard limit. This second fix is also unmerged upstream.",
+            "source": "llm",
+            "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397413",
+            "maybe_resolved": false
+          },
+          {
+            "severity": "blocker",
+            "summary": "The patch reads /proc/sys/vm/max_map_count, which needs a libvirt AppArmor rule. Without that rule, confined guests cannot read the file. A versioned Breaks/Depends in qemu is also needed so libvirt is upgraded together with qemu. Neither is confirmed done; the libvirt fix is in a separate bug (2170732).",
+            "source": "llm",
+            "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397571",
+            "maybe_resolved": false
+          },
+          {
+            "severity": "concern",
+            "summary": "The fix only reduces the chance of hitting the VMA limit. With very many vCPUs or threads, QEMU can still crash (reproduced at 255 vCPUs with the noble limit of 1048576). The SRU must be described as mitigation, not a full fix.",
+            "source": "llm",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/15",
+            "maybe_resolved": false
+          },
+          {
+            "severity": "concern",
+            "summary": "The post-fix reproducer still crashes with 255 vCPUs under the noble limit, and a peak of 509362 VMAs was seen with the overcommitted test plan. The test plan and Impact section changed repeatedly, so verification may be unclear and the impact on real noble users is debatable, because noble's higher default limit already avoids the crash in most cases.",
+            "source": "llm",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/21",
+            "maybe_resolved": false
+          },
+          {
+            "severity": "concern",
+            "summary": "The upstream follow-up patches (the parsing fix and the lower default max pool size) were submitted but not yet merged. The upstream status and the reason for the delay are unanswered, and the SRU diverges from upstream until they land.",
+            "source": "llm",
+            "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397571",
+            "maybe_resolved": false
+          }
+        ],
+        "attention_reasons": [
+          "The backported patches parse /proc/sys/vm/max_map_count incorrectly, so the default value is always used and the system-limit awareness the fix relies on does not work. The corrected upstream patch is not yet merged, and it is unclear whether it is included in the SRU.",
+          "The default returned by get_global_pool_hard_max_size is UINT_MAX, which effectively removes the cap. A conservative default such as 65530 is needed. Combined with the parsing bug, the shipped fix would not enforce any hard limit. This second fix is also unmerged upstream.",
+          "The patch reads /proc/sys/vm/max_map_count, which needs a libvirt AppArmor rule. Without that rule, confined guests cannot read the file. A versioned Breaks/Depends in qemu is also needed so libvirt is upgraded together with qemu. Neither is confirmed done; the libvirt fix is in a separate bug (2170732).",
+          "The fix only reduces the chance of hitting the VMA limit. With very many vCPUs or threads, QEMU can still crash (reproduced at 255 vCPUs with the noble limit of 1048576). The SRU must be described as mitigation, not a full fix.",
+          "The post-fix reproducer still crashes with 255 vCPUs under the noble limit, and a peak of 509362 VMAs was seen with the overcommitted test plan. The test plan and Impact section changed repeatedly, so verification may be unclear and the impact on real noble users is debatable, because noble's higher default limit already avoids the crash in most cases.",
+          "The upstream follow-up patches (the parsing fix and the lower default max pool size) were submitted but not yet merged. The upstream status and the reason for the delay are unanswered, and the SRU diverges from upstream until they land.",
+          "sru-lint did not run on merge proposal 512759 (ubuntu/noble-devel): sru-lint timed out after 180s",
+          "Development release is not fixed yet",
+          "sru-lint: 2 warning(s) in merge proposal 513965 (ubuntu/tenacious-devel)",
+          "sru-lint: 2 warning(s) in merge proposal 513964 (ubuntu/stonking-devel)",
+          "sru-lint: 2 warning(s) in merge proposal 513945 (ubuntu/resolute-devel)",
+          "1 earlier concern(s) in comments look resolved by later comments; skim to confirm",
+          "qemu 1:8.2.2+ds-0ubuntu1.20 in the noble upload queue (Unapproved), awaiting SRU team review"
+        ],
+        "findings": [
+          {
+            "level": "blocked",
+            "text": "The backported patches parse /proc/sys/vm/max_map_count incorrectly, so the default value is always used and the system-limit awareness the fix relies on does not work. The corrected upstream patch is not yet merged, and it is unclear whether it is included in the SRU.",
+            "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397413"
+          },
+          {
+            "level": "blocked",
+            "text": "The default returned by get_global_pool_hard_max_size is UINT_MAX, which effectively removes the cap. A conservative default such as 65530 is needed. Combined with the parsing bug, the shipped fix would not enforce any hard limit. This second fix is also unmerged upstream.",
+            "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397413"
+          },
+          {
+            "level": "blocked",
+            "text": "The patch reads /proc/sys/vm/max_map_count, which needs a libvirt AppArmor rule. Without that rule, confined guests cannot read the file. A versioned Breaks/Depends in qemu is also needed so libvirt is upgraded together with qemu. Neither is confirmed done; the libvirt fix is in a separate bug (2170732).",
+            "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397571"
+          },
+          {
+            "level": "engineer-attention",
+            "text": "The fix only reduces the chance of hitting the VMA limit. With very many vCPUs or threads, QEMU can still crash (reproduced at 255 vCPUs with the noble limit of 1048576). The SRU must be described as mitigation, not a full fix.",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/15"
+          },
+          {
+            "level": "engineer-attention",
+            "text": "The post-fix reproducer still crashes with 255 vCPUs under the noble limit, and a peak of 509362 VMAs was seen with the overcommitted test plan. The test plan and Impact section changed repeatedly, so verification may be unclear and the impact on real noble users is debatable, because noble's higher default limit already avoids the crash in most cases.",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/21"
+          },
+          {
+            "level": "engineer-attention",
+            "text": "The upstream follow-up patches (the parsing fix and the lower default max pool size) were submitted but not yet merged. The upstream status and the reason for the delay are unanswered, and the SRU diverges from upstream until they land.",
+            "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759/comments/1397571"
+          },
+          {
+            "level": "sponsor-attention",
+            "text": "sru-lint did not run on merge proposal 512759 (ubuntu/noble-devel): sru-lint timed out after 180s",
+            "url": "https://code.launchpad.net/~whershberger/ubuntu/+source/qemu/+git/qemu/+merge/512759"
+          },
+          {
+            "level": "review",
+            "text": "Development release is not fixed yet",
+            "url": "https://bugs.launchpad.net/bugs/2168803"
+          },
+          {
+            "level": "review",
+            "text": "sru-lint: 2 warning(s) in merge proposal 513965 (ubuntu/tenacious-devel)",
+            "url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513965"
+          },
+          {
+            "level": "review",
+            "text": "sru-lint: 2 warning(s) in merge proposal 513964 (ubuntu/stonking-devel)",
+            "url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513964"
+          },
+          {
+            "level": "review",
+            "text": "sru-lint: 2 warning(s) in merge proposal 513945 (ubuntu/resolute-devel)",
+            "url": "https://code.launchpad.net/~kicchou/ubuntu/+source/qemu/+git/qemu/+merge/513945"
+          },
+          {
+            "level": "review",
+            "text": "1 earlier concern(s) in comments look resolved by later comments; skim to confirm",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/2168803/comments/7"
+          },
+          {
+            "level": "ready",
+            "text": "qemu 1:8.2.2+ds-0ubuntu1.20 in the noble upload queue (Unapproved), awaiting SRU team review",
+            "url": "https://launchpad.net/ubuntu/noble/+queue?queue_state=1&queue_text=qemu"
+          }
+        ],
+        "level": "blocked"
+      }
+    ],
+    "reasons": [
+      "LP: #2168803 (qemu): The backported patches parse /proc/sys/vm/max_map_count incorrectly, so the default value is always used and the system-limit awareness the fix relies on does not work. The corrected upstream patch is not yet merged, and it is unclear whether it is included in the SRU.",
+      "LP: #2168803 (qemu): The default returned by get_global_pool_hard_max_size is UINT_MAX, which effectively removes the cap. A conservative default such as 65530 is needed. Combined with the parsing bug, the shipped fix would not enforce any hard limit. This second fix is also unmerged upstream.",
+      "LP: #2168803 (qemu): The patch reads /proc/sys/vm/max_map_count, which needs a libvirt AppArmor rule. Without that rule, confined guests cannot read the file. A versioned Breaks/Depends in qemu is also needed so libvirt is upgraded together with qemu. Neither is confirmed done; the libvirt fix is in a separate bug (2170732).",
+      "LP: #2168803 (qemu): The fix only reduces the chance of hitting the VMA limit. With very many vCPUs or threads, QEMU can still crash (reproduced at 255 vCPUs with the noble limit of 1048576). The SRU must be described as mitigation, not a full fix.",
+      "LP: #2168803 (qemu): The post-fix reproducer still crashes with 255 vCPUs under the noble limit, and a peak of 509362 VMAs was seen with the overcommitted test plan. The test plan and Impact section changed repeatedly, so verification may be unclear and the impact on real noble users is debatable, because noble's higher default limit already avoids the crash in most cases.",
+      "LP: #2168803 (qemu): The upstream follow-up patches (the parsing fix and the lower default max pool size) were submitted but not yet merged. The upstream status and the reason for the delay are unanswered, and the SRU diverges from upstream until they land.",
+      "LP: #2168803 (qemu): sru-lint did not run on merge proposal 512759 (ubuntu/noble-devel): sru-lint timed out after 180s",
+      "LP: #2168803 (qemu): Development release is not fixed yet",
+      "LP: #2168803 (qemu): sru-lint: 2 warning(s) in merge proposal 513965 (ubuntu/tenacious-devel)",
+      "LP: #2168803 (qemu): sru-lint: 2 warning(s) in merge proposal 513964 (ubuntu/stonking-devel)",
+      "LP: #2168803 (qemu): sru-lint: 2 warning(s) in merge proposal 513945 (ubuntu/resolute-devel)",
+      "LP: #2168803 (qemu): 1 earlier concern(s) in comments look resolved by later comments; skim to confirm",
+      "LP: #2168803 (qemu): qemu 1:8.2.2+ds-0ubuntu1.20 in the noble upload queue (Unapproved), awaiting SRU team review"
+    ],
+    "level": "blocked"
+  }
+]
