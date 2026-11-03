@@ -64,7 +64,20 @@ def test_sru_template():
 
 def test_tags():
     found = analyze_tags(["verification-needed-noble", "verification-failed-noble", "block-proposed-jammy"], "u")
-    assert [b.severity for b in found] == ["blocker", "blocker"]
+    assert [b.severity for b in found] == ["concern", "blocker"]
+
+
+def test_verification_failure_needs_the_engineer():
+    from sru_scout.models import BugReview, SeriesStatus
+    from sru_scout.triage import classify_bug
+
+    comments = [c("desc", "bug text"), c("tester", "Verification failed on noble, the fix does not work", 1)]
+    assert [b.severity for b in analyze_comments(comments)] == ["concern"]
+    b = BugReview(1, "u", tags=["verification-failed-noble"], series=[SeriesStatus("noble", "Fix Committed")])
+    b.blockers = analyze_tags(b.tags, b.url)
+    classify_bug(b)
+    assert b.level == "engineer-attention"
+    assert any("verification-failed-noble" in r for r in b.attention_reasons)
 
 
 def c(author, body, i=0, **kw):

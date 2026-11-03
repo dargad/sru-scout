@@ -11,7 +11,8 @@ BOT_AUTHORS = {"ubuntu-archive-robot", "launchpad", "janitor", "bug-importer", "
 SRU_TEMPLATE_SECTIONS = ("impact", "test plan", "where problems could occur")
 
 _TAG_RULES = (
-    (re.compile(r"^verification-failed(-.+)?$"), "blocker", "Verification failed ({tag})"),
+    # A failed verification is for the engineer to fix, not a release blocker for the SRU team.
+    (re.compile(r"^verification-failed(-.+)?$"), "concern", "Verification failed ({tag})"),
     (re.compile(r"^regression-(update|proposed|release)$"), "blocker", "Regression reported ({tag})"),
     (re.compile(r"^block-proposed(-.+)?$"), "blocker", "Release blocked by SRU team ({tag})"),
     (re.compile(r"^(sru-)?(needs|blocked).*"), "concern", "Tag '{tag}' set"),
@@ -26,7 +27,7 @@ _TEXT_RULES = (
     (r"\bblock(er|ed|s|ing)\b", "concern", "Blocker mentioned"),
     (r"\bneeds? (fixing|work|changes|rework|to be (fixed|updated|rebased))\b|\bplease (fix|update|add|rebase|drop|resubmit|rework)\b", "concern", "Reviewer requests changes"),
     (r"\bmissing\b.{0,40}\b(test plan|sru template|changelog|bug (number|reference)|dep-?3|autopkgtest|ppa)\b", "concern", "Missing required information"),
-    (r"\b(verification|testing).{0,30}\bfail", "blocker", "Verification failure reported"),
+    (r"\b(verification|testing).{0,30}\bfail", "concern", "Verification failure reported"),
 )
 _COMPILED_TEXT_RULES = [(re.compile(p, re.I | re.S), sev, text) for p, sev, text in _TEXT_RULES]
 

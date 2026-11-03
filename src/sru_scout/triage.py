@@ -7,7 +7,7 @@ from sru_scout.pending import REPORT_URL
 
 # pending-sru flag -> (level, explanation)
 _PENDING_FLAGS = {
-    "verification-failed": ("blocked", "verification failed"),
+    "verification-failed": ("engineer-attention", "verification failed"),
     "block-proposed": ("blocked", "tagged block-proposed, double-check before release"),
     "incomplete": ("engineer-attention", "bug is Incomplete"),
     "removal-candidate": ("engineer-attention", "candidate for removal from -proposed (no verification)"),

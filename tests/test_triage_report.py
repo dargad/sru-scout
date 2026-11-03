@@ -179,14 +179,15 @@ def test_resolved_concerns_are_grouped_and_tag_duplicates_dropped():
 
     p = Patch("p", "w", "d", [], lint())
     blockers = [Blocker("concern", f"c{i}", "comment", f"https://x/{i}", maybe_resolved=True) for i in range(5)]
-    blockers.append(Blocker("blocker", "Verification failed (verification-failed-noble)", "tag", "https://bug"))
+    blockers.append(Blocker("concern", "Verification failed (verification-failed-noble)", "tag", "https://bug"))
     b = bug([SeriesStatus("noble", "Fix Committed")], [p], blockers=blockers)
     b.pending = [PendingEntry(1, "noble", "pkg", "1.0", 3, flags=["verification-failed"])]
     classify_bug(b)
     texts = [f.text for f in b.findings]
     assert sum("look resolved" in t for t in texts) == 1 and "5 earlier" in " ".join(texts)
     assert not any("verification-failed-noble" in t for t in texts)
-    assert b.findings[0].level == "blocked" and b.findings[0].url.startswith("https://static-reports")
+    assert b.level == "engineer-attention"
+    assert b.findings[0].level == "engineer-attention" and b.findings[0].url.startswith("https://static-reports")
 
 
 def test_html_overview_and_details():
