@@ -12,11 +12,15 @@ from sru_scout.http import make_session
 from sru_scout.models import Blocker, BugReview, Comment
 
 MAX_CHARS = 12000
+MAX_DESCRIPTION_CHARS = 4000
 
 PROMPT = """You assist an Ubuntu SRU (Stable Release Update) reviewer.
-Below are the comments on a Launchpad bug and its merge proposals, oldest first.
+Below are the current description of a Launchpad bug, then its comments and merge proposal comments, oldest first.
+The comment transcript may be truncated at the start.
 List only issues that still block, or may block, releasing the fix to the stable series.
-Ignore issues that later comments show were resolved. Reply with a JSON array only; each item:
+Ignore issues that later comments show were resolved.
+Do not report on the presence of the SRU template; that is checked separately.
+Reply with a JSON array only; each item:
 {"severity": "blocker" | "concern", "summary": "<one sentence>", "comment_url": "<url or empty>"}
 Reply [] if nothing blocks the release."""
 
@@ -37,12 +41,17 @@ class LLMAnalyzer:
             return None
         return cls(url, model, os.environ.get("SRU_SCOUT_LLM_API_KEY", ""))
 
-    def analyze(self, bug: BugReview, comments: list[Comment]) -> list[Blocker]:
+    def analyze(self, bug: BugReview, comments: list[Comment], description: str = "") -> list[Blocker]:
+        # Message #0 is the original description; the current (possibly edited) one is passed separately.
+        if comments and comments[0].source == "bug":
+            comments = comments[1:]
         transcript = []
         for c in comments + [mc for mp in bug.merge_proposals for mc in mp.comments]:
             vote = f" [vote: {c.vote}]" if c.vote else ""
             transcript.append(f"--- {c.author} {c.date}{vote} {c.url}\n{c.body.strip()}")
         text = "\n".join(transcript)[-MAX_CHARS:]
+        description = description.strip()[:MAX_DESCRIPTION_CHARS]
+        template = "present" if bug.has_sru_template else "missing or incomplete"
         resp = self.session.post(
             self.url,
             json={
@@ -50,7 +59,11 @@ class LLMAnalyzer:
                 "temperature": 0,
                 "messages": [
                     {"role": "system", "content": PROMPT},
-                    {"role": "user", "content": f"Bug: {bug.title}\nTags: {', '.join(bug.tags)}\n\n{text}"},
+                    {
+                        "role": "user",
+                        "content": f"Bug: {bug.title}\nTags: {', '.join(bug.tags)}\nSRU template: {template}\n\n"
+                        f"=== Description ===\n{description}\n\n=== Comments ===\n{text}",
+                    },
                 ],
             },
             timeout=120,

@@ -75,7 +75,7 @@ class SruAgent:
         review.blockers = blockers.analyze_bug(review, comments)
         if self.llm:
             try:
-                review.blockers += self.llm.analyze(review, comments)
+                review.blockers += self.llm.analyze(review, comments, bug.get("description") or "")
             except Exception as exc:
                 log.warning("LLM analysis of LP #%s failed: %s", review.bug_id, exc)
 
