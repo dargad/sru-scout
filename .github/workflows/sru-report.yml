@@ -2,7 +2,8 @@ name: Daily SRU report
 
 on:
   schedule:
-    - cron: "15 8 * * *"
+    # Off the busy :00/:15/:30/:45 marks, where GitHub delays schedule events most
+    - cron: "53 7 * * *"
       timezone: "Europe/Warsaw"
   workflow_dispatch:
 
