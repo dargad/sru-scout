@@ -12,11 +12,13 @@ from sru_scout.http import make_session
 from sru_scout.models import Blocker, BugReview, Comment
 
 MAX_CHARS = 12000
-MAX_DESCRIPTION_CHARS = 4000
+MAX_DESCRIPTION_CHARS = 12000
+TRUNCATED = "[... truncated by sru-scout ...]"
 
 PROMPT = """You assist an Ubuntu SRU (Stable Release Update) reviewer.
 Below are the current description of a Launchpad bug, then its comments and merge proposal comments, oldest first.
 The comment transcript may be truncated at the start.
+Text ending in "[... truncated by sru-scout ...]" was cut short for length; never report it as truncated or incomplete.
 List only issues that still block, or may block, releasing the fix to the stable series.
 Ignore issues that later comments show were resolved.
 Do not report on the presence of the SRU template; that is checked separately.
@@ -50,7 +52,9 @@ class LLMAnalyzer:
             vote = f" [vote: {c.vote}]" if c.vote else ""
             transcript.append(f"--- {c.author} {c.date}{vote} {c.url}\n{c.body.strip()}")
         text = "\n".join(transcript)[-MAX_CHARS:]
-        description = description.strip()[:MAX_DESCRIPTION_CHARS]
+        description = description.strip()
+        if len(description) > MAX_DESCRIPTION_CHARS:
+            description = f"{description[:MAX_DESCRIPTION_CHARS]}\n{TRUNCATED}"
         template = "present" if bug.has_sru_template else "missing or incomplete"
         resp = self.session.post(
             self.url,
