@@ -7,11 +7,12 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Iterable
 
 from sru_scout import blockers
+from sru_scout.excuses import ExcusesClient
 from sru_scout.jira import JiraIssue
 from sru_scout.launchpad import LaunchpadClient, LaunchpadError, annotate_series
 from sru_scout.lint import SruLint
 from sru_scout.llm import LLMAnalyzer
-from sru_scout.models import BugReview, IssueReview, QueuedUpload, SeriesStatus
+from sru_scout.models import BugReview, Excuse, IssueReview, QueuedUpload, SeriesStatus
 from sru_scout.pending import PendingSRU
 from sru_scout.triage import classify_bug, classify_issue
 
@@ -27,11 +28,13 @@ class SruAgent:
         pending: PendingSRU | None = None,
         workers: int = 4,
         max_patches: int = 5,
+        excuses: ExcusesClient | None = None,
     ) -> None:
         self.lp = launchpad
         self.linter = linter
         self.llm = llm
         self.pending = pending
+        self.excuses = excuses
         self.workers = workers
         self.max_patches = max_patches
 
@@ -62,6 +65,7 @@ class SruAgent:
         uploaded = {p.series for p in review.pending}
         review.queued = self._queued(review.package, [s for s in review.series if s.pending and s.series not in uploaded])
         uploaded |= {q.series for q in review.queued}
+        review.excuses = self._excuses(review) if self.excuses else []
         needs_upload = not review.series or any(s.pending and s.series not in uploaded for s in review.series)
         if not needs_upload and not review.pending:
             return
@@ -91,6 +95,23 @@ class SruAgent:
                 for q in uploads:
                     q.series = s.series
                 found += uploads
+        return found
+
+    def _excuses(self, review: BugReview) -> list[Excuse]:
+        """Excuses for the bug's packages in every release where they may sit in -proposed."""
+        assert self.excuses
+        wanted = {(p.series, p.package): p.series for p in review.pending}  # (codename, package) -> task series
+        packages = [p for p in review.package.split(", ") if p]
+        for s in review.series:
+            if s.eol or s.closed or s.status == "Fix Released":
+                continue
+            for package in packages:
+                wanted.setdefault((s.codename or s.series, package), s.series)
+        found = []
+        for (codename, package), series in wanted.items():
+            if excuse := self.excuses.lookup(codename, package):
+                excuse.series = series
+                found.append(excuse)
         return found
 
     def _lint(self, review: BugReview) -> None:

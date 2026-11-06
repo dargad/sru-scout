@@ -7,8 +7,9 @@ For every card it:
 1. Finds the Launchpad bug(s) referenced by the card (summary, description, links, remote links, comments as a last resort). Cards without one are skipped.
 2. Reads the per-series bug task status. Series that are *Fix Committed* / *Fix Released* (or closed / EOL) are skipped.
 3. For the remaining series it collects attached patches and linked merge proposals and runs `sru-lint check <url>` on each (patch attachment data, or the merge proposal preview diff).
-4. Scans bug tags, bug comments, merge proposal comments, votes and status for blockers (rule based; optionally an LLM pass).
-5. Classifies each card as `blocked`, `engineer-attention`, `sponsor-attention`, `review`, `ready` or `done` and renders a CLI and/or HTML report.
+4. For releases where the package may sit in -proposed, reads its entry on the proposed-migration excuses page (`https://ubuntu-archive-team.ubuntu.com/proposed-migration/<release>/update_excuses.html#<package>`): autopkgtest regressions, missing builds, uninstallable/impossible dependencies and migration block requests. Disable with `--no-excuses`.
+5. Scans bug tags, bug comments, merge proposal comments, votes and status for blockers (rule based; optionally an LLM pass).
+6. Classifies each card as `blocked`, `engineer-attention`, `sponsor-attention`, `review`, `ready` or `done` and renders a CLI and/or HTML report.
 
 ## Setup
 
@@ -44,8 +45,8 @@ Use `--fail-on-attention` to get exit code 1 when any card is blocked or needs e
 
 | Level | Meaning |
 |-------|---------|
-| `blocked` | Unresolved strong blocker: `block-proposed*` / `regression-*` tags, rejected/disapproved MP, NACK, FTBFS, autopkgtest regressions |
-| `engineer-attention` (shown as *Engineer*) | The patch author / bug owner has to act: incomplete SRU template, no patch/MP for a pending series, sru-lint errors, reviewer change requests, verification failed (`verification-failed*` tag or comment), bug Incomplete, not verified in time or not building in -proposed, inaccessible bug |
+| `blocked` | Unresolved strong blocker: `block-proposed*` / `regression-*` tags, rejected/disapproved MP, NACK, FTBFS, autopkgtest regressions, migration blocked on request in a bug (excuses page) |
+| `engineer-attention` (shown as *Engineer*) | The patch author / bug owner has to act: incomplete SRU template, no patch/MP for a pending series, sru-lint errors, reviewer change requests, verification failed (`verification-failed*` tag or comment), bug Incomplete, not verified in time or not building in -proposed, autopkgtest regressions / missing builds / uninstallable packages on the excuses page, inaccessible bug |
 | `sponsor-attention` (shown as *Sponsor*) | A sponsor / uploader has to act: nothing is left for the engineer and the patches/MPs for series not yet in -proposed wait for review and upload, or sru-lint could not run on them |
 | `review` | sru-lint warnings, possibly-resolved concerns, development release not fixed yet (listed under `sponsor-attention` when a sponsor is needed anyway) |
 | `ready` | Nothing to do right now, e.g. the fix is in -proposed awaiting verification |

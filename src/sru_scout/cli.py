@@ -12,6 +12,7 @@ from rich.console import Console
 
 from sru_scout import report_cli
 from sru_scout.agent import SruAgent
+from sru_scout.excuses import EXCUSES_URL, ExcusesClient
 from sru_scout.jira import DEFAULT_BASE_URL, DEFAULT_BOARD, DEFAULT_JQL, JiraClient, JiraError, JiraIssue
 from sru_scout.launchpad import LaunchpadClient
 from sru_scout.lint import SruLint
@@ -38,6 +39,8 @@ def build_parser() -> argparse.ArgumentParser:
     chk.add_argument("--max-patches", type=int, default=5, help="lint at most the newest N patches per bug")
     chk.add_argument("--no-pending-sru", action="store_true", help="do not consult the pending-SRU report")
     chk.add_argument("--pending-sru-url", default=REPORT_URL, help="pending-SRU report location (default: %(default)s)")
+    chk.add_argument("--no-excuses", action="store_true", help="do not consult the proposed-migration excuses pages")
+    chk.add_argument("--excuses-url", default=EXCUSES_URL, help="excuses page, {series} is replaced by the codename (default: %(default)s)")
     chk.add_argument("--llm", action="store_true", help="also analyse comments with an LLM (needs SRU_SCOUT_LLM_URL and SRU_SCOUT_LLM_MODEL)")
     chk.add_argument("--workers", type=int, default=4, help="cards reviewed in parallel")
     out = r.add_argument_group("output")
@@ -102,7 +105,10 @@ def review(args: argparse.Namespace) -> int:
         except Exception as exc:  # the report is supplementary; carry on without it
             console.print(f"[yellow]Could not load the pending-SRU report ({exc}); continuing without it[/yellow]")
 
-    agent = SruAgent(LaunchpadClient(), linter, llm, pending, workers=args.workers, max_patches=args.max_patches)
+    excuses = None if args.no_excuses else ExcusesClient(args.excuses_url)
+    agent = SruAgent(
+        LaunchpadClient(), linter, llm, pending, workers=args.workers, max_patches=args.max_patches, excuses=excuses
+    )
     done = 0
 
     def progress(r: IssueReview) -> None:

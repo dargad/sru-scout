@@ -176,12 +176,35 @@
               {% if s.proposed %}{{ s.proposed.version }}{% if s.proposed.days is not none %} <span class="muted">&middot; {{ s.proposed.days }} d</span>{% endif %}<br>
                 {% for f in s.proposed.flags %}<span class="flag {{ 'bad' if f in ('verification-failed', 'block-proposed') else 'warn' if f in ('incomplete', 'removal-candidate') else 'good' if f == 'verified' else '' }}">{{ f }}</span>{% else %}<span class="muted">awaiting verification</span>{% endfor %}
               {% elif s.queued %}{% for q in s.queued %}<div>{{ link(q.url, q.version) }} <span class="muted">&middot; {{ q.status }} queue</span></div>{% endfor %}
-              {% else %}<span class="muted">&ndash;</span>{% endif %}
+              {% elif not s.excuses %}<span class="muted">&ndash;</span>{% endif %}
+              {% for e in s.excuses %}<div>{% if not s.proposed %}{{ e.new_version }} {% endif %}{{ link(e.url, 'migration') }}
+                {% for b in e.block_bugs %}<span class="flag bad">blocked: LP #{{ b }}</span>{% endfor %}
+                {% if e.regressions %}<span class="flag bad">{{ e.regressions|length }} autopkgtest regression(s)</span>{% endif %}
+                {% if e.tests_running %}<span class="flag">{{ e.tests_running }} test(s) running</span>{% endif %}</div>{% endfor %}
             </td>
             <td>{% for a in s.artifacts %}<div>{{ a }}</div>{% else %}<span class="muted">&ndash;</span>{% endfor %}</td>
           </tr>
           {% endfor %}
         </table>
+        {% endif %}
+
+        {% if bug.excuses %}
+        <h4>proposed-migration</h4>
+        {% for e in bug.excuses %}
+        <details class="artifact">
+          <summary>
+            {{ link(e.url, e.package ~ ' ' ~ e.new_version) }} <code>{{ e.series }}</code>
+            <span class="muted">{{ e.status }}{% if e.days is not none %} &middot; {{ e.days }} d{% endif %}</span>
+            {% if e.regressions %}<span class="pill error">{{ e.regressions|length }} regression(s)</span>{% endif %}
+          </summary>
+          <table class="lint">
+            {% for t in e.regressions %}<tr><td class="sev-error">regression</td><td>{{ t.test }}</td><td>{{ link(t.url, t.arch) }}</td></tr>{% endfor %}
+            {% for b in e.block_bugs %}<tr><td class="sev-error">blocked</td><td colspan="2">{{ link('https://bugs.launchpad.net/bugs/' ~ b, 'LP: #' ~ b) }}</td></tr>{% endfor %}
+            {% for text in e.issues %}<tr><td class="sev-warning">issue</td><td colspan="2">{{ text|truncate(300) }}</td></tr>{% endfor %}
+            {% for text in e.info %}<tr><td class="sev-info">info</td><td colspan="2">{{ text|truncate(300) }}</td></tr>{% endfor %}
+          </table>
+        </details>
+        {% endfor %}
         {% endif %}
 
         {% if bug.patches or bug.merge_proposals %}

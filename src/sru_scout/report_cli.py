@@ -67,6 +67,11 @@ def series_summary(bug: BugReview) -> Text:
         days = f" {p.days}d" if p.days is not None else ""
         text.append(f"proposed:{p.series}{days}{flags}", style="magenta")
         text.append("  ")
+    for e in bug.excuses:
+        notes = [f"{len(e.regressions)} regressions"] if e.regressions else []
+        notes += [f"blocked by LP #{b}" for b in e.block_bugs]
+        text.append(f"migration:{e.series}" + (f" [{', '.join(notes)}]" if notes else ""), style="red" if notes else "magenta")
+        text.append("  ")
     return text
 
 

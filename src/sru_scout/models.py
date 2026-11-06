@@ -125,6 +125,32 @@ class QueuedUpload:
 
 
 @dataclass
+class AutopkgtestResult:
+    test: str  # "package/version" as triggered by the upload; version may be "unknown"
+    arch: str
+    result: str
+    url: str = ""
+
+
+@dataclass
+class Excuse:
+    """A package's entry on the proposed-migration excuses page: why it has not migrated out of -proposed yet."""
+
+    series: str  # task series, "devel" for the generic Ubuntu task
+    package: str
+    old_version: str
+    new_version: str
+    url: str = ""
+    status: str = ""  # e.g. "BLOCKED: Rejected/violates migration policy/introduces a regression"
+    issues: list[str] = field(default_factory=list)  # "Issues preventing migration", without autopkgtests and the SRU freeze
+    info: list[str] = field(default_factory=list)  # "Additional info", without autopkgtests
+    regressions: list[AutopkgtestResult] = field(default_factory=list)
+    tests_running: int = 0
+    block_bugs: list[int] = field(default_factory=list)  # migration blocked on request in these bugs
+    days: int | None = None
+
+
+@dataclass
 class Finding:
     """One reason a bug needs (or does not need) attention, with the page that backs it up."""
 
@@ -146,6 +172,7 @@ class BugReview:
     series: list[SeriesStatus] = field(default_factory=list)
     pending: list[PendingEntry] = field(default_factory=list)
     queued: list[QueuedUpload] = field(default_factory=list)
+    excuses: list[Excuse] = field(default_factory=list)
     patches: list[Patch] = field(default_factory=list)
     merge_proposals: list[MergeProposal] = field(default_factory=list)
     blockers: list[Blocker] = field(default_factory=list)

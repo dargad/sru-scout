@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from sru_scout.models import LEVELS, BugReview, Finding, IssueReview
+import re
+
+from sru_scout.models import LEVELS, AutopkgtestResult, BugReview, Finding, IssueReview
 from sru_scout.pending import REPORT_URL
 
 # pending-sru flag -> (level, explanation)
@@ -19,9 +21,25 @@ _PENDING_FLAGS = {
 # Tag-based blockers already covered by the corresponding pending-sru flag: (flag, blocker summary prefix)
 _TAG_DUPLICATES = (("verification-failed", "Verification failed"), ("block-proposed", "Release blocked by SRU team"))
 
+# Excuse lines that need someone to fix the upload rather than wait
+_MIGRATION_PROBLEM = re.compile(r"missing build|Impossible Depends|cannot depend on|unsatisfiable|uninstallable", re.I)
+
 
 def _worst(*levels: str) -> str:
     return min(levels, key=LEVELS.index)
+
+
+def _shorten(text: str, limit: int = 200) -> str:
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+
+
+def _tests(results: list[AutopkgtestResult], limit: int = 5) -> str:
+    archs: dict[str, list[str]] = {}
+    for r in results:
+        archs.setdefault(r.test, []).append(r.arch)
+    names = [f"{test} ({', '.join(a)})" for test, a in archs.items()]
+    more = f" and {len(names) - limit} more" if len(names) > limit else ""
+    return ", ".join(names[:limit]) + more
 
 
 def classify_bug(bug: BugReview) -> None:
@@ -99,6 +117,20 @@ def classify_bug(bug: BugReview) -> None:
     # Nothing to do until the SRU team accepts it into -proposed.
     for q in bug.queued:
         found.append(Finding("ready", f"{q.package} {q.version} in the {q.series} upload queue ({q.status}), awaiting SRU team review", q.url))
+
+    for e in bug.excuses:
+        codename = next((s.codename for s in bug.series if s.series == e.series and s.codename), e.series)
+        where = f"{e.package} {e.new_version} in {codename}-proposed"
+        for bug_id in e.block_bugs:
+            flag("blocked", f"{where}: migration blocked as requested in LP: #{bug_id}", f"https://bugs.launchpad.net/bugs/{bug_id}")
+        if e.regressions:
+            flag("engineer-attention", f"{where}: autopkgtest regressions: {_tests(e.regressions)}", e.url)
+        problems = [t for t in e.issues + e.info if _MIGRATION_PROBLEM.search(t)]
+        if problems:
+            more = f" (+{len(problems) - 1} more)" if len(problems) > 1 else ""
+            flag("engineer-attention", f"{where}: {_shorten(problems[0])}{more}", e.url)
+        if e.tests_running and not e.regressions:
+            found.append(Finding("ready", f"{where}: {e.tests_running} autopkgtest(s) still running", e.url))
 
     if any(s.series == "devel" for s in to_upload) and len(bug.series) > 1:
         flag("review", "Development release is not fixed yet", bug.url)
