@@ -38,9 +38,9 @@ def test_lookup():
     assert len(pending) == 2 and pending.for_bug(999) == []
 
 
-def bug(entry_flags, task_status="Fix Committed", builds=()):
+def bug(entry_flags, task_status="Fix Committed", builds=(), days=9):
     b = BugReview(1, "u", series=[SeriesStatus("noble", task_status)],
-                  pending=[PendingEntry(1, "noble", "pkg", "1.0", 9, flags=list(entry_flags), builds_not_ok=list(builds))])
+                  pending=[PendingEntry(1, "noble", "pkg", "1.0", days, flags=list(entry_flags), builds_not_ok=list(builds))])
     classify_bug(b)
     return b
 
@@ -52,6 +52,12 @@ def test_fixed_but_in_proposed_is_not_done():
     assert bug(["verification-failed"]).level == "engineer-attention"
     assert bug(["verified", "block-proposed"]).level == "blocked"
     assert bug([], builds=["amd64: Failed to build"]).level == "engineer-attention"
+
+
+def test_verified_package_stays_in_proposed_for_seven_days():
+    assert any("6 days elapsed" in reason for reason in bug(["verified"], days=6).attention_reasons)
+    assert any("verified, can be released" in reason for reason in bug(["verified"], days=7).attention_reasons)
+    assert any("age unknown" in reason for reason in bug(["verified"], days=None).attention_reasons)
 
 
 def test_proposed_needs_no_patches_even_if_task_not_fixed():

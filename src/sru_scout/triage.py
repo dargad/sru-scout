@@ -17,6 +17,7 @@ _PENDING_FLAGS = {
     "messages": ("review", "new comments since it was accepted in -proposed"),
     "broken": ("review", "listed as duplicate/inaccessible"),
 }
+MIN_PROPOSED_DAYS = 7
 
 # Tag-based blockers already covered by the corresponding pending-sru flag: (flag, blocker summary prefix)
 _TAG_DUPLICATES = (("verification-failed", "Verification failed"), ("block-proposed", "Release blocked by SRU team"))
@@ -89,7 +90,14 @@ def classify_bug(bug: BugReview) -> None:
         report_url = f"{REPORT_URL}#{p.series}"
         for name in p.flags:
             if name in _PENDING_FLAGS:
-                flag(_PENDING_FLAGS[name][0], f"{where}: {_PENDING_FLAGS[name][1]}", report_url)
+                message = _PENDING_FLAGS[name][1]
+                if name == "verified" and (p.days is None or p.days < MIN_PROPOSED_DAYS):
+                    message = "verified, but must remain in -proposed for at least 7 days"
+                    if p.days is None:
+                        message += " (age unknown)"
+                    else:
+                        message += f" ({p.days} days elapsed)"
+                flag(_PENDING_FLAGS[name][0], f"{where}: {message}", report_url)
         if p.builds_not_ok:
             flag("engineer-attention", f"{where}: builds not OK ({', '.join(p.builds_not_ok)})", report_url)
         if not p.flags:
