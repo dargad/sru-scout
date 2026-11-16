@@ -1,6 +1,6 @@
 from sru_scout.blockers import analyze_comments, analyze_tags, has_sru_template
 from sru_scout.jira import JiraIssue, adf_to_text, extract_bug_ids
-from sru_scout.launchpad import UbuntuSeries, annotate_series, guess_series
+from sru_scout.launchpad import LaunchpadClient, UbuntuSeries, annotate_series, guess_series
 from sru_scout.lint import parse_findings
 from sru_scout.llm import parse_reply
 from sru_scout.models import Comment, SeriesStatus
@@ -41,6 +41,18 @@ def test_annotate_series_maps_devel_to_release_in_development():
         ("noble", "24.04", False),
         ("mantic", "23.10", True),
     ]
+
+
+def test_series_statuses_keep_task_package():
+    client = LaunchpadClient()
+    client._entries = lambda _: iter([
+        {"bug_target_name": "qemu (Ubuntu)", "status": "In Progress", "web_link": "qemu"},
+        {"bug_target_name": "qemu-hwe (Ubuntu Tenacious)", "status": "New", "web_link": "qemu-hwe"},
+    ])
+
+    packages, statuses = client.series_statuses({"bug_tasks_collection_link": "tasks"})
+    assert packages == "qemu, qemu-hwe"
+    assert [(s.package, s.series) for s in statuses] == [("qemu", "devel"), ("qemu-hwe", "tenacious")]
 
 
 def test_parse_findings_tolerates_preamble():

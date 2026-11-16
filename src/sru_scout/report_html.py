@@ -30,9 +30,20 @@ def _newest_first(s: SeriesStatus) -> tuple[bool, bool, tuple[int, ...]]:
 
 
 def release_chips(bug: BugReview) -> list[dict[str, str]]:
-    """One colour-coded initial per Ubuntu task (S for stonking, N for noble...), newest release first."""
+    """One colour-coded initial per component and release, newest release first."""
+    by_component_release: dict[tuple[str, str], SeriesStatus] = {}
+    unscoped = []
+    for s in bug.series:
+        if not s.package:
+            unscoped.append(s)
+            continue
+        key = (s.package, s.codename or s.series)
+        current = by_component_release.get(key)
+        if current is None or (current.series == "devel" and s.series != "devel"):
+            by_component_release[key] = s
+
     chips = []
-    for s in sorted(bug.series, key=_newest_first):
+    for s in sorted([*by_component_release.values(), *unscoped], key=_newest_first):
         name = s.codename or s.series
         label = f"{name} (devel)" if s.series == "devel" and s.codename else name
         title = f"{label} {s.version}".rstrip() + f": {s.status}" + (" (EOL)" if s.eol else "")

@@ -124,6 +124,7 @@ class LaunchpadClient:
                     importance=task.get("importance", ""),
                     assignee=_name(task.get("assignee_link")),
                     url=task["web_link"],
+                    package=m["pkg"],
                 )
             )
         return ", ".join(packages), result

@@ -220,3 +220,18 @@ def test_release_chips_newest_first_and_coloured_by_status():
     assert [c["cls"] for c in chips] == ["released", "committed", "progress", "closed eol"]
     assert chips[0]["title"] == "stonking (devel) 26.10: Fix Released"
     assert chips[3]["title"] == "focal 20.04: Won't Fix (EOL)"
+
+
+def test_release_chips_collapse_devel_alias_per_component():
+    from sru_scout.report_html import release_chips
+
+    b = BugReview(1, "u", series=[
+        SeriesStatus("devel", "In Progress", codename="tenacious", version="27.04", package="qemu"),
+        SeriesStatus("tenacious", "Fix Committed", codename="tenacious", version="27.04", package="qemu"),
+        SeriesStatus("devel", "In Progress", codename="tenacious", version="27.04", package="qemu-hwe"),
+        SeriesStatus("tenacious", "Fix Committed", codename="tenacious", version="27.04", package="qemu-hwe"),
+    ])
+
+    chips = release_chips(b)
+    assert [c["letter"] for c in chips] == ["T", "T"]
+    assert [c["cls"] for c in chips] == ["committed", "committed"]

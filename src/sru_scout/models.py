@@ -63,6 +63,7 @@ class SeriesStatus:
     eol: bool = False  # series is no longer supported, so a pending task is irrelevant
     codename: str = ""  # release the task targets; for "devel" the release currently in development
     version: str = ""  # e.g. "24.04"
+    package: str = ""  # source package targeted by the Launchpad task
 
     @property
     def fixed(self) -> bool:
