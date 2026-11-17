@@ -207,7 +207,7 @@ def test_html_overview_and_details():
 
 
 def test_release_chips_newest_first_and_coloured_by_status():
-    from sru_scout.report_html import release_chips
+    from sru_scout.report_html import release_groups
 
     b = BugReview(1, "u", series=[
         SeriesStatus("jammy", "In Progress", version="22.04"),
@@ -215,7 +215,9 @@ def test_release_chips_newest_first_and_coloured_by_status():
         SeriesStatus("noble", "Fix Committed", version="24.04"),
         SeriesStatus("focal", "Won't Fix", version="20.04", eol=True),
     ])
-    chips = release_chips(b)
+    (group,) = release_groups(b)
+    chips = group["chips"]
+    assert group["package"] == "?"
     assert [c["letter"] for c in chips] == ["S", "N", "J", "F"]
     assert [c["cls"] for c in chips] == ["released", "committed", "progress", "closed eol"]
     assert chips[0]["title"] == "stonking (devel) 26.10: Fix Released"
@@ -223,15 +225,22 @@ def test_release_chips_newest_first_and_coloured_by_status():
 
 
 def test_release_chips_collapse_devel_alias_per_component():
-    from sru_scout.report_html import release_chips
+    from sru_scout.report_html import release_groups
 
-    b = BugReview(1, "u", series=[
+    b = BugReview(1, "u", package="qemu, qemu-hwe", series=[
         SeriesStatus("devel", "In Progress", codename="tenacious", version="27.04", package="qemu"),
         SeriesStatus("tenacious", "Fix Committed", codename="tenacious", version="27.04", package="qemu"),
         SeriesStatus("devel", "In Progress", codename="tenacious", version="27.04", package="qemu-hwe"),
         SeriesStatus("tenacious", "Fix Committed", codename="tenacious", version="27.04", package="qemu-hwe"),
     ])
 
-    chips = release_chips(b)
-    assert [c["letter"] for c in chips] == ["T", "T"]
-    assert [c["cls"] for c in chips] == ["committed", "committed"]
+    groups = release_groups(b)
+    assert [group["package"] for group in groups] == ["qemu", "qemu-hwe"]
+    assert [[c["letter"] for c in group["chips"]] for group in groups] == [["T"], ["T"]]
+    assert [[c["cls"] for c in group["chips"]] for group in groups] == [["committed"], ["committed"]]
+
+    issue = IssueReview("SI-3", "u", "Multi-component fix", bugs=[b])
+    classify_issue(issue)
+    html = render_html([issue])
+    assert '<div><code>qemu</code></div><div><code>qemu-hwe</code></div></td>' in html
+    assert html.count('title="tenacious 27.04: Fix Committed">T</span></div>') == 2

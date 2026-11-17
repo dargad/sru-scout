@@ -133,8 +133,8 @@
         {% for bug in r.bugs %}<div>{{ link(bug.url, bug.label) }} {{ bug.short_title(70) }}</div>
         {% else %}<span class="muted">{{ r.summary }}</span>{% endfor %}
       </td>
-      <td class="nowrap">{% for bug in r.bugs %}<div><code>{{ bug.package or '?' }}</code></div>{% endfor %}</td>
-      <td class="nowrap">{% for bug in r.bugs %}<div>{% for c in release_chips(bug) %}<span class="rel {{ c.cls }}" title="{{ c.title }}">{{ c.letter }}</span>{% else %}<span class="muted">&ndash;</span>{% endfor %}</div>{% endfor %}</td>
+      <td class="nowrap">{% for bug in r.bugs %}{% for group in release_groups(bug) %}<div><code>{{ group.package }}</code></div>{% else %}<div><code>{{ bug.package or '?' }}</code></div>{% endfor %}{% endfor %}</td>
+      <td class="nowrap">{% for bug in r.bugs %}{% for group in release_groups(bug) %}<div>{% for c in group.chips %}<span class="rel {{ c.cls }}" title="{{ c.title }}">{{ c.letter }}</span>{% else %}<span class="muted">&ndash;</span>{% endfor %}</div>{% else %}<div><span class="muted">&ndash;</span></div>{% endfor %}{% endfor %}</td>
       <td>
         {% for mi in main_issues(r) %}<div>{% if mi.label %}<b>{{ mi.label }}</b> {% endif %}{{ mi.text }}{% if mi.more %} <span class="more">(+{{ mi.more }} more)</span>{% endif %}</div>{% endfor %}
       </td>

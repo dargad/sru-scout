@@ -29,8 +29,8 @@ def _newest_first(s: SeriesStatus) -> tuple[bool, bool, tuple[int, ...]]:
     return (s.series != "devel", not version, version)
 
 
-def release_chips(bug: BugReview) -> list[dict[str, str]]:
-    """One colour-coded initial per component and release, newest release first."""
+def release_groups(bug: BugReview) -> list[dict[str, Any]]:
+    """Colour-coded release chips grouped by source component."""
     by_component_release: dict[tuple[str, str], SeriesStatus] = {}
     unscoped = []
     for s in bug.series:
@@ -42,14 +42,20 @@ def release_chips(bug: BugReview) -> list[dict[str, str]]:
         if current is None or (current.series == "devel" and s.series != "devel"):
             by_component_release[key] = s
 
-    chips = []
+    groups: dict[str, dict[str, Any]] = {}
     for s in sorted([*by_component_release.values(), *unscoped], key=_newest_first):
+        package = s.package or bug.package or "?"
         name = s.codename or s.series
         label = f"{name} (devel)" if s.series == "devel" and s.codename else name
         title = f"{label} {s.version}".rstrip() + f": {s.status}" + (" (EOL)" if s.eol else "")
         state = _RELEASE_STATE.get(s.status, "closed" if s.closed else "open")
-        chips.append({"letter": name[0].upper(), "cls": state + (" eol" if s.eol else ""), "title": title})
-    return chips
+        group = groups.setdefault(package, {"package": package, "chips": []})
+        group["chips"].append({"letter": name[0].upper(), "cls": state + (" eol" if s.eol else ""), "title": title})
+
+    package_order = [package.strip() for package in bug.package.split(",") if package.strip()]
+    ordered = [package for package in package_order if package in groups]
+    ordered.extend(package for package in groups if package not in ordered)
+    return [groups[package] for package in ordered]
 
 
 def series_rows(bug: BugReview) -> list[dict[str, Any]]:
@@ -102,7 +108,7 @@ def main_issues(review: IssueReview, limit: int = 160) -> list[dict[str, Any]]:
 
 
 _env.globals.update(
-    series_rows=series_rows, artifacts=artifacts, labels=LABELS, main_issues=main_issues, release_chips=release_chips
+    series_rows=series_rows, artifacts=artifacts, labels=LABELS, main_issues=main_issues, release_groups=release_groups
 )
 
 
