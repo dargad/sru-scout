@@ -1,0 +1,223 @@
+[
+  {
+    "key": "LP#2169282",
+    "url": "https://bugs.launchpad.net/bugs/2169282",
+    "summary": "[SRU] Update OVN to 26.03.3 in Gazpacho Ubuntu Cloud Archive",
+    "status": "",
+    "assignee": "",
+    "bugs": [
+      {
+        "bug_id": 2169282,
+        "url": "https://bugs.launchpad.net/bugs/2169282",
+        "title": "[SRU] Update OVN to 26.03.3 in Gazpacho Ubuntu Cloud Archive",
+        "package": "openvswitch, ovn",
+        "accessible": true,
+        "error": "",
+        "tags": [],
+        "has_sru_template": false,
+        "series": [
+          {
+            "series": "devel",
+            "status": "Invalid",
+            "importance": "Undecided",
+            "assignee": "",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/openvswitch/+bug/2169282",
+            "eol": false,
+            "codename": "tenacious",
+            "version": "27.04",
+            "package": "openvswitch"
+          },
+          {
+            "series": "devel",
+            "status": "Invalid",
+            "importance": "Undecided",
+            "assignee": "",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/ovn/+bug/2169282",
+            "eol": false,
+            "codename": "tenacious",
+            "version": "27.04",
+            "package": "ovn"
+          },
+          {
+            "series": "resolute",
+            "status": "In Progress",
+            "importance": "Undecided",
+            "assignee": "",
+            "url": "https://bugs.launchpad.net/ubuntu/resolute/+source/openvswitch/+bug/2169282",
+            "eol": false,
+            "codename": "resolute",
+            "version": "26.04",
+            "package": "openvswitch"
+          },
+          {
+            "series": "resolute",
+            "status": "In Progress",
+            "importance": "Undecided",
+            "assignee": "",
+            "url": "https://bugs.launchpad.net/ubuntu/resolute/+source/ovn/+bug/2169282",
+            "eol": false,
+            "codename": "resolute",
+            "version": "26.04",
+            "package": "ovn"
+          }
+        ],
+        "pending": [],
+        "queued": [],
+        "excuses": [],
+        "patches": [],
+        "merge_proposals": [
+          {
+            "web_url": "https://code.launchpad.net/~gboutry/ubuntu/+source/ovn/+git/ovn/+merge/512577",
+            "status": "Needs review",
+            "source": "refs/heads/sru/resolute-26.03.3",
+            "target": "refs/heads/ubuntu/resolute-devel",
+            "series": "resolute",
+            "diff_url": "https://code.launchpad.net/~gboutry/ubuntu/+source/ovn/+git/ovn/+merge/512577/+preview-diff/1145575/+files/preview.diff",
+            "votes": [
+              "matperin: Approve",
+              "crypticcoder: Approve"
+            ],
+            "comments": [
+              {
+                "author": "crypticcoder",
+                "date": "2026-10-28T16:36:48.497660+00:00",
+                "body": "Thanks for your work on this.",
+                "source": "mp",
+                "url": "https://code.launchpad.net/~gboutry/ubuntu/+source/ovn/+git/ovn/+merge/512577/comments/1398017",
+                "vote": "Approve"
+              },
+              {
+                "author": "matperin",
+                "date": "2026-10-28T16:42:04.133709+00:00",
+                "body": "Thank you, looks good to me.",
+                "source": "mp",
+                "url": "https://code.launchpad.net/~gboutry/ubuntu/+source/ovn/+git/ovn/+merge/512577/comments/1398020",
+                "vote": "Approve"
+              }
+            ],
+            "lint": {
+              "url": "https://code.launchpad.net/~gboutry/ubuntu/+source/ovn/+git/ovn/+merge/512577/+preview-diff/1145575/+files/preview.diff",
+              "ran": false,
+              "error": "could not parse sru-lint output (no JSON array in sru-lint output): Error: Failed to fetch content from URL: HTTP Error 502: Proxy Error",
+              "findings": []
+            }
+          },
+          {
+            "web_url": "https://code.launchpad.net/~gboutry/ubuntu/+source/openvswitch/+git/openvswitch/+merge/512575",
+            "status": "Needs review",
+            "source": "refs/heads/sru/resolute-3.7.1",
+            "target": "refs/heads/ubuntu/resolute-devel",
+            "series": "resolute",
+            "diff_url": "https://code.launchpad.net/~gboutry/ubuntu/+source/openvswitch/+git/openvswitch/+merge/512575/+preview-diff/1145595/+files/preview.diff",
+            "votes": [
+              "matperin: Approve",
+              "crypticcoder: Approve"
+            ],
+            "comments": [
+              {
+                "author": "crypticcoder",
+                "date": "2026-10-28T16:36:53.511953+00:00",
+                "body": "Thanks for your work on this.",
+                "source": "mp",
+                "url": "https://code.launchpad.net/~gboutry/ubuntu/+source/openvswitch/+git/openvswitch/+merge/512575/comments/1398018",
+                "vote": "Approve"
+              },
+              {
+                "author": "matperin",
+                "date": "2026-10-28T16:40:45.934282+00:00",
+                "body": "Thanks for the backports, this seems fine to me!",
+                "source": "mp",
+                "url": "https://code.launchpad.net/~gboutry/ubuntu/+source/openvswitch/+git/openvswitch/+merge/512575/comments/1398019",
+                "vote": "Approve"
+              }
+            ],
+            "lint": {
+              "url": "https://code.launchpad.net/~gboutry/ubuntu/+source/openvswitch/+git/openvswitch/+merge/512575/+preview-diff/1145595/+files/preview.diff",
+              "ran": true,
+              "error": "",
+              "findings": [
+                {
+                  "rule_id": "PATCH001",
+                  "severity": "error",
+                  "message": "The Origin field must be a single line",
+                  "path": "debian/patches/ofproto-fix-recirc-id-cleanup-race.patch",
+                  "line": 6,
+                  "doc_url": ""
+                },
+                {
+                  "rule_id": "PATCH001",
+                  "severity": "error",
+                  "message": "The Origin field must be a single line",
+                  "path": "debian/patches/packets-support-unicast-nd-ns.patch",
+                  "line": 5,
+                  "doc_url": ""
+                },
+                {
+                  "rule_id": "LPBUG001",
+                  "severity": "error",
+                  "message": "SRU template incomplete for bug LP: #2169282; missing: [Test Plan], [Where problems could occur]",
+                  "path": "debian/changelog",
+                  "line": 3,
+                  "doc_url": "https://documentation.ubuntu.com/project/SRU/reference/bug-template/#reference-sru-bug-template"
+                },
+                {
+                  "rule_id": "LPBUG001",
+                  "severity": "error",
+                  "message": "SRU template incomplete for bug LP: #2169948; missing: [Impact], [Test Plan], [Where problems could occur]",
+                  "path": "debian/changelog",
+                  "line": 12,
+                  "doc_url": "https://documentation.ubuntu.com/project/SRU/reference/bug-template/#reference-sru-bug-template"
+                }
+              ]
+            }
+          }
+        ],
+        "blockers": [
+          {
+            "severity": "concern",
+            "summary": "The autopkgtest links are PPA runs without any stated pass/fail outcome. The OVN runs (2026-10-08, one on 10-13) predate the OVS runs (10-13 to 10-15). OVN may therefore not have been retested against the final patched openvswitch-source that the description says it must be built against.",
+            "source": "llm",
+            "url": "https://bugs.launchpad.net/cloud-archive/+bug/2169282/comments/7",
+            "maybe_resolved": false
+          }
+        ],
+        "attention_reasons": [
+          "SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete",
+          "sru-lint: 4 error(s) in merge proposal 512575 (ubuntu/resolute-devel)",
+          "The autopkgtest links are PPA runs without any stated pass/fail outcome. The OVN runs (2026-10-08, one on 10-13) predate the OVS runs (10-13 to 10-15). OVN may therefore not have been retested against the final patched openvswitch-source that the description says it must be built against.",
+          "sru-lint did not run on merge proposal 512577 (ubuntu/resolute-devel): could not parse sru-lint output (no JSON array in sru-lint output): Error: Failed to fetch content from URL: HTTP Error 502: Proxy Error"
+        ],
+        "findings": [
+          {
+            "level": "engineer-attention",
+            "text": "SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete",
+            "url": "https://bugs.launchpad.net/bugs/2169282"
+          },
+          {
+            "level": "engineer-attention",
+            "text": "sru-lint: 4 error(s) in merge proposal 512575 (ubuntu/resolute-devel)",
+            "url": "https://code.launchpad.net/~gboutry/ubuntu/+source/openvswitch/+git/openvswitch/+merge/512575"
+          },
+          {
+            "level": "engineer-attention",
+            "text": "The autopkgtest links are PPA runs without any stated pass/fail outcome. The OVN runs (2026-10-08, one on 10-13) predate the OVS runs (10-13 to 10-15). OVN may therefore not have been retested against the final patched openvswitch-source that the description says it must be built against.",
+            "url": "https://bugs.launchpad.net/cloud-archive/+bug/2169282/comments/7"
+          },
+          {
+            "level": "sponsor-attention",
+            "text": "sru-lint did not run on merge proposal 512577 (ubuntu/resolute-devel): could not parse sru-lint output (no JSON array in sru-lint output): Error: Failed to fetch content from URL: HTTP Error 502: Proxy Error",
+            "url": "https://code.launchpad.net/~gboutry/ubuntu/+source/ovn/+git/ovn/+merge/512577"
+          }
+        ],
+        "level": "engineer-attention"
+      }
+    ],
+    "reasons": [
+      "LP: #2169282 (openvswitch, ovn): SRU template ([Impact], [Test Plan], [Where problems could occur]) is incomplete",
+      "LP: #2169282 (openvswitch, ovn): sru-lint: 4 error(s) in merge proposal 512575 (ubuntu/resolute-devel)",
+      "LP: #2169282 (openvswitch, ovn): The autopkgtest links are PPA runs without any stated pass/fail outcome. The OVN runs (2026-10-08, one on 10-13) predate the OVS runs (10-13 to 10-15). OVN may therefore not have been retested against the final patched openvswitch-source that the description says it must be built against.",
+      "LP: #2169282 (openvswitch, ovn): sru-lint did not run on merge proposal 512577 (ubuntu/resolute-devel): could not parse sru-lint output (no JSON array in sru-lint output): Error: Failed to fetch content from URL: HTTP Error 502: Proxy Error"
+    ],
+    "level": "engineer-attention"
+  }
+]
