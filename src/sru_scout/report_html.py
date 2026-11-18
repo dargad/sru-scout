@@ -92,34 +92,38 @@ def artifacts(bug: BugReview) -> list[dict[str, Any]]:
     return result
 
 
-def main_issues(review: IssueReview, limit: int = 160) -> list[dict[str, Any]]:
-    """Top finding of each open bug for the overview table; the LP label is only shown for multi-bug cards."""
-    rows = []
-    for bug in review.bugs:
-        if bug.level == "done" or not bug.findings:
-            continue
-        text = " ".join(bug.findings[0].text.split())
-        if len(text) > limit:
-            text = text[: limit - 1].rstrip() + "…"
-        rows.append({"label": bug.label if len(review.bugs) > 1 else "", "text": text, "more": len(bug.findings) - 1})
-    if not review.bugs:
-        rows.append({"label": "", "text": review.reasons[0] if review.reasons else "", "more": 0})
-    return rows
+def main_issue(bug: BugReview, limit: int = 160) -> dict[str, Any] | None:
+    """Top finding of an open bug for the overview table."""
+    if bug.level == "done" or not bug.findings:
+        return None
+    text = " ".join(bug.findings[0].text.split())
+    if len(text) > limit:
+        text = text[: limit - 1].rstrip() + "…"
+    return {"text": text, "more": len(bug.findings) - 1}
+
+
+def unique_bugs(reviews: list[IssueReview]) -> list[BugReview]:
+    """Every Launchpad bug once, even when several reviews reference it; the bug number is the report's ID."""
+    bugs: dict[int, BugReview] = {}
+    for review in reviews:
+        for bug in review.bugs:
+            bugs.setdefault(bug.bug_id, bug)
+    return sorted(bugs.values(), key=lambda b: (LEVELS.index(b.level), b.bug_id))
 
 
 _env.globals.update(
-    series_rows=series_rows, artifacts=artifacts, labels=LABELS, main_issues=main_issues, release_groups=release_groups
+    series_rows=series_rows, artifacts=artifacts, labels=LABELS, main_issue=main_issue, release_groups=release_groups
 )
 
 
 def render_html(reviews: list[IssueReview], title: str = "Ubuntu Stable Release Updates") -> str:
-    ordered = sorted(reviews, key=lambda r: (LEVELS.index(r.level), r.key))
-    counts = Counter(r.level for r in reviews)
+    bugs = unique_bugs(reviews)
+    counts = Counter(b.level for b in bugs)
     return _env.get_template("report.html.j2").render(
         title=title,
-        reviews=ordered,
-        todo=[r for r in ordered if r.level != "done"],
-        finished=[r for r in ordered if r.level == "done"],
+        bugs=bugs,
+        todo=[b for b in bugs if b.level != "done"],
+        finished=[b for b in bugs if b.level == "done"],
         levels=LEVELS,
         counts={level: counts.get(level, 0) for level in LEVELS},
         generated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),

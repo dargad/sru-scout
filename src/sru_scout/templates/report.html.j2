@@ -44,7 +44,7 @@
   table { border-collapse: collapse; width: 100%; }
   th { text-align: left; font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 2px solid var(--border); padding: .35rem .6rem; }
   td { border-bottom: 1px solid var(--border); padding: .45rem .6rem; vertical-align: top; overflow-wrap: anywhere; }
-  td.nowrap { white-space: nowrap; overflow-wrap: normal; }
+  .nowrap { white-space: nowrap; overflow-wrap: normal; }
   table.overview tr:hover td { background: var(--light); }
   table.overview td.lvlcell { border-left: 4px solid var(--c); white-space: nowrap; }
   .more { color: var(--muted); font-size: .85rem; }
@@ -107,12 +107,12 @@
 <header class="top"><div class="inner">
   <h1><b>SRU</b> review</h1>
   <span class="muted" style="color:#d8c5cf">{{ title }}</span>
-  <span class="meta">Generated {{ generated }} &middot; {{ reviews|length }} card(s)</span>
+  <span class="meta">Generated {{ generated }} &middot; {{ bugs|length }} bug(s)</span>
 </div></header>
 
 <main>
   <div class="tiles" role="toolbar" aria-label="Filter by status">
-    <button class="tile active" data-level="all" style="--c: var(--aubergine)"><span class="n">{{ reviews|length }}</span><span class="l">All cards</span></button>
+    <button class="tile active" data-level="all" style="--c: var(--aubergine)"><span class="n">{{ bugs|length }}</span><span class="l">All bugs</span></button>
     {% for level in levels %}
     <button class="tile {{ level }}" data-level="{{ level }}"><span class="n">{{ counts[level] }}</span><span class="l">{{ labels[level] }}</span></button>
     {% endfor %}
@@ -124,19 +124,15 @@
     <span class="rel released">Fix Released</span><span class="rel committed">Fix Committed</span><span class="rel progress">In Progress</span><span class="rel incomplete">Incomplete</span><span class="rel open">New / Confirmed / Triaged</span><span class="rel closed">Won't Fix / Invalid</span><span class="rel open eol">EOL</span>
   </p>
   <table class="overview">
-    <tr><th>Status</th><th>Jira</th><th>Launchpad bug</th><th>Package</th><th>Releases</th><th>Main issue</th></tr>
-    {% for r in todo %}
-    <tr class="row lvl {{ r.level }}" data-level="{{ r.level }}">
-      <td class="lvlcell"><span class="badge lvl {{ r.level }}">{{ labels[r.level] }}</span></td>
-      <td class="nowrap"><a href="#card-{{ r.key }}">{{ r.key }}</a></td>
+    <tr><th>Status</th><th>Launchpad bug</th><th>Package</th><th>Releases</th><th>Main issue</th></tr>
+    {% for bug in todo %}
+    <tr class="row lvl {{ bug.level }}" data-level="{{ bug.level }}">
+      <td class="lvlcell"><span class="badge lvl {{ bug.level }}">{{ labels[bug.level] }}</span></td>
+      <td><a href="#bug-{{ bug.bug_id }}" class="nowrap">{{ bug.label }}</a> {{ bug.short_title(70) }}</td>
+      <td class="nowrap">{% for group in release_groups(bug) %}<div><code>{{ group.package }}</code></div>{% else %}<div><code>{{ bug.package or '?' }}</code></div>{% endfor %}</td>
+      <td class="nowrap">{% for group in release_groups(bug) %}<div>{% for c in group.chips %}<span class="rel {{ c.cls }}" title="{{ c.title }}">{{ c.letter }}</span>{% else %}<span class="muted">&ndash;</span>{% endfor %}</div>{% else %}<div><span class="muted">&ndash;</span></div>{% endfor %}</td>
       <td>
-        {% for bug in r.bugs %}<div>{{ link(bug.url, bug.label) }} {{ bug.short_title(70) }}</div>
-        {% else %}<span class="muted">{{ r.summary }}</span>{% endfor %}
-      </td>
-      <td class="nowrap">{% for bug in r.bugs %}{% for group in release_groups(bug) %}<div><code>{{ group.package }}</code></div>{% else %}<div><code>{{ bug.package or '?' }}</code></div>{% endfor %}{% endfor %}</td>
-      <td class="nowrap">{% for bug in r.bugs %}{% for group in release_groups(bug) %}<div>{% for c in group.chips %}<span class="rel {{ c.cls }}" title="{{ c.title }}">{{ c.letter }}</span>{% else %}<span class="muted">&ndash;</span>{% endfor %}</div>{% else %}<div><span class="muted">&ndash;</span></div>{% endfor %}{% endfor %}</td>
-      <td>
-        {% for mi in main_issues(r) %}<div>{% if mi.label %}<b>{{ mi.label }}</b> {% endif %}{{ mi.text }}{% if mi.more %} <span class="more">(+{{ mi.more }} more)</span>{% endif %}</div>{% endfor %}
+        {% set mi = main_issue(bug) %}{% if mi %}{{ mi.text }}{% if mi.more %} <span class="more">(+{{ mi.more }} more)</span>{% endif %}{% endif %}
       </td>
     </tr>
     {% endfor %}
@@ -144,18 +140,15 @@
 
   <h2>Details</h2>
   <div class="toolbar"><button id="expand">Expand all</button><button id="collapse">Collapse all</button></div>
-  {% for r in todo %}
-  <details class="card lvl {{ r.level }}" id="card-{{ r.key }}" data-level="{{ r.level }}">
+  {% for bug in todo %}
+  <details class="card lvl {{ bug.level }}" id="bug-{{ bug.bug_id }}" data-level="{{ bug.level }}">
     <summary>
-      <span class="badge lvl {{ r.level }}">{{ labels[r.level] }}</span>
-      <strong>{{ link(r.url, r.key) }}</strong>
-      <span>{{ r.summary }}</span>
-      <span class="muted">{{ r.status }}{% if r.assignee %} &middot; {{ r.assignee }}{% endif %}</span>
+      <span class="badge lvl {{ bug.level }}">{{ labels[bug.level] }}</span>
+      <strong>{{ link(bug.url, bug.label) }}</strong>
+      <code>{{ bug.package or '?' }}</code>
+      <span>{{ bug.title }}</span>
     </summary>
-    <div class="body">
-      {% for bug in r.bugs %}
-      <section class="bug">
-        <h3>{{ link(bug.url, bug.label) }} &middot; <span class="pkg">{{ bug.package or '?' }}</span> &middot; {{ bug.title }}</h3>
+    <div class="body bug">
         {% if bug.error %}<p class="sev-error">{{ bug.error }}</p>{% endif %}
 
         <h4>Issues</h4>
@@ -235,10 +228,6 @@
         </details>
         {% endfor %}
         {% endif %}
-      </section>
-      {% else %}
-      <p class="muted">No Launchpad bug found in this card.</p>
-      {% endfor %}
     </div>
   </details>
   {% endfor %}
@@ -247,8 +236,7 @@
   {% if finished %}
   <h2 data-level="done" class="doneh">Done ({{ finished|length }})</h2>
   <ul class="done-list" data-level="done">
-    {% for r in finished %}<li>{{ link(r.url, r.key) }} &middot;
-      {% for bug in r.bugs %}{{ link(bug.url, bug.label) }} <code>{{ bug.package or '?' }}</code> {{ bug.short_title(50) }}{% if not loop.last %}, {% endif %}{% endfor %}</li>
+    {% for bug in finished %}<li>{{ link(bug.url, bug.label) }} <code>{{ bug.package or '?' }}</code> {{ bug.short_title(50) }}</li>
     {% endfor %}
   </ul>
   {% endif %}

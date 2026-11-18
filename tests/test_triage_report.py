@@ -130,8 +130,8 @@ def test_html_renders_and_escapes():
     html = render_html([issue])
     assert "<script>alert(1)" not in html
     assert 'href="javascript:' not in html
-    assert "SI-1" in html and "sru-lint" in html
-    assert "LP: #1" in html
+    assert "sru-lint" in html and "LP: #1" in html
+    assert "SI-1" not in html and "jira" not in html.lower()
 
 
 def test_label_title_and_issue_reason_prefix():
@@ -194,16 +194,30 @@ def test_html_overview_and_details():
     p = Patch("fix.debdiff", "https://lp/a", "d", ["noble"], lint("error", "info"))
     b = bug([SeriesStatus("noble", "In Progress")], [p], title="Some title")
     done = bug([SeriesStatus("noble", "Fix Released")], title="Finished")
+    done.bug_id = 2
     issue = IssueReview("SI-1", "https://jira/SI-1", "s", bugs=[b])
     finished = IssueReview("SI-2", "https://jira/SI-2", "s", bugs=[done])
     classify_issue(issue)
     classify_issue(finished)
     html = render_html([issue, finished])
-    assert "Where to look" in html and 'id="card-SI-1"' in html
+    assert "Where to look" in html and 'id="bug-1"' in html and 'href="#bug-1"' in html
     assert 'badge lvl engineer-attention">Engineer<' in html and '<span class="l">Sponsor</span>' in html
     assert 'title="noble: In Progress">N</span>' in html
-    assert 'id="card-SI-2"' not in html and "Done (1)" in html
+    assert 'id="bug-2"' not in html and "Done (1)" in html and "LP: #2" in html
     assert html.index("error") < html.index("info</span>")
+
+
+def test_html_lists_each_bug_once_by_lp_number():
+    first = bug([SeriesStatus("noble", "In Progress")], title="Shared bug")
+    other = bug([SeriesStatus("noble", "In Progress")], title="Second bug")
+    other.bug_id = 7
+    a = IssueReview("SI-1", "https://jira/SI-1", "s", bugs=[first, other])
+    b = IssueReview("SI-2", "https://jira/SI-2", "s", bugs=[first])
+    classify_issue(a)
+    classify_issue(b)
+    html = render_html([a, b])
+    assert html.count('id="bug-1"') == 1 and html.count('id="bug-7"') == 1
+    assert "2 bug(s)" in html and "SI-" not in html
 
 
 def test_release_chips_newest_first_and_coloured_by_status():
