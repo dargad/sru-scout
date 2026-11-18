@@ -200,10 +200,14 @@ def test_html_overview_and_details():
     classify_issue(issue)
     classify_issue(finished)
     html = render_html([issue, finished])
-    assert "Where to look" in html and 'id="bug-1"' in html and 'href="#bug-1"' in html
+    assert "Where to look" in html and html.count('id="bug-1"') == 1 and "Details" not in html
+    assert html.count("LP: #1</a>") == 1  # one list: the bug appears once, in its foldable row
+    summary = html[html.index('id="bug-1"'):html.index("</summary>")]
+    assert "Some title" in summary and 'title="noble: In Progress">N</span>' in summary
     assert 'badge lvl engineer-attention">Engineer<' in html and '<span class="l">Sponsor</span>' in html
     assert 'title="noble: In Progress">N</span>' in html
-    assert 'id="bug-2"' not in html and "Done (1)" in html and "LP: #2" in html
+    assert html.index('id="bug-1"') < html.index('id="bug-2"')  # done bugs close the same list
+    assert 'class="card lvl done" id="bug-2"' in html and "done-list" not in html
     assert html.index("error") < html.index("info</span>")
 
 
@@ -256,5 +260,5 @@ def test_release_chips_collapse_devel_alias_per_component():
     issue = IssueReview("SI-3", "u", "Multi-component fix", bugs=[b])
     classify_issue(issue)
     html = render_html([issue])
-    assert '<div><code>qemu</code></div><div><code>qemu-hwe</code></div></td>' in html
-    assert html.count('title="tenacious 27.04: Fix Committed">T</span></div>') == 2
+    assert '<span class="line"><code>qemu</code></span><span class="line"><code>qemu-hwe</code></span></span>' in html
+    assert html.count('title="tenacious 27.04: Fix Committed">T</span></span>') == 2

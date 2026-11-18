@@ -122,8 +122,6 @@ def render_html(reviews: list[IssueReview], title: str = "Ubuntu Stable Release 
     return _env.get_template("report.html.j2").render(
         title=title,
         bugs=bugs,
-        todo=[b for b in bugs if b.level != "done"],
-        finished=[b for b in bugs if b.level == "done"],
         levels=LEVELS,
         counts={level: counts.get(level, 0) for level in LEVELS},
         generated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),

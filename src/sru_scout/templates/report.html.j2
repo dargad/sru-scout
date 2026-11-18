@@ -45,17 +45,19 @@
   th { text-align: left; font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 2px solid var(--border); padding: .35rem .6rem; }
   td { border-bottom: 1px solid var(--border); padding: .45rem .6rem; vertical-align: top; overflow-wrap: anywhere; }
   .nowrap { white-space: nowrap; overflow-wrap: normal; }
-  table.overview tr:hover td { background: var(--light); }
-  table.overview td.lvlcell { border-left: 4px solid var(--c); white-space: nowrap; }
   .more { color: var(--muted); font-size: .85rem; }
+  .line { display: block; }
 
-  details.card { border: 1px solid var(--border); border-left: 4px solid var(--c); margin: .6rem 0; border-radius: 2px; }
-  details.card > summary { padding: .6rem .9rem; cursor: pointer; display: flex; gap: .75rem; align-items: baseline; flex-wrap: wrap; list-style: none; }
+  .row-grid { display: grid; grid-template-columns: 1rem 6.4rem minmax(14rem, 2fr) minmax(7rem, max-content) minmax(5rem, max-content) 3fr; column-gap: .8rem; align-items: start; }
+  .list-head { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 2px solid var(--border); padding: .35rem .6rem .35rem calc(.6rem + 4px); }
+  details.card { border-bottom: 1px solid var(--border); border-left: 4px solid var(--c); }
+  details.card > summary { padding: .45rem .6rem; cursor: pointer; list-style: none; overflow-wrap: anywhere; }
+  details.card > summary:hover { background: var(--light); }
   details.card > summary::-webkit-details-marker { display: none; }
   details.card > summary::before { content: "\25B8"; color: var(--muted); }
   details.card[open] > summary::before { content: "\25BE"; }
   details.card[open] > summary { background: var(--light); }
-  .card .body { padding: .25rem 1rem 1rem; }
+  .card .body { padding: .25rem 1rem 1rem 2.4rem; border-top: 1px solid var(--border); }
   .bug h3 { font-size: 1.05rem; font-weight: 400; margin: 1rem 0 .4rem; }
   .bug h3 .pkg { font-weight: 500; }
   .bug h4 { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 1rem 0 .3rem; }
@@ -90,13 +92,15 @@
   table.lint { margin: .3rem 0 .6rem 1rem; width: calc(100% - 1rem); font-size: .9rem; }
   .sev-error { color: var(--blocked); font-weight: 500; } .sev-warning { color: #b34700; } .sev-info { color: var(--muted); }
 
-  .done-list { columns: 2; column-gap: 2rem; font-size: .9rem; list-style: none; padding: 0; }
-  .done-list li { break-inside: avoid; padding: .15rem 0; }
   .toolbar { display: flex; justify-content: flex-end; gap: .5rem; margin: .5rem 0; }
   .toolbar button { font: inherit; font-size: .85rem; padding: .2rem .8rem; border: 1px solid var(--border); background: #fff; border-radius: 2px; cursor: pointer; }
   .toolbar button:hover { background: var(--light); }
   [hidden] { display: none !important; }
-  @media (max-width: 700px) { .done-list { columns: 1; } }
+  @media (max-width: 700px) {
+    .list-head { display: none; }
+    .row-grid { grid-template-columns: 1rem 1fr; row-gap: .2rem; }
+    .row-grid > :nth-child(n+2) { grid-column: 2; }
+  }
 </style>
 </head>
 <body>
@@ -118,37 +122,24 @@
     {% endfor %}
   </div>
 
-  {% if todo %}
+  {% if bugs %}
   <h2>Where to look</h2>
   <p class="legend">Releases:
     <span class="rel released">Fix Released</span><span class="rel committed">Fix Committed</span><span class="rel progress">In Progress</span><span class="rel incomplete">Incomplete</span><span class="rel open">New / Confirmed / Triaged</span><span class="rel closed">Won't Fix / Invalid</span><span class="rel open eol">EOL</span>
   </p>
-  <table class="overview">
-    <tr><th>Status</th><th>Launchpad bug</th><th>Package</th><th>Releases</th><th>Main issue</th></tr>
-    {% for bug in todo %}
-    <tr class="row lvl {{ bug.level }}" data-level="{{ bug.level }}">
-      <td class="lvlcell"><span class="badge lvl {{ bug.level }}">{{ labels[bug.level] }}</span></td>
-      <td><a href="#bug-{{ bug.bug_id }}" class="nowrap">{{ bug.label }}</a> {{ bug.short_title(70) }}</td>
-      <td class="nowrap">{% for group in release_groups(bug) %}<div><code>{{ group.package }}</code></div>{% else %}<div><code>{{ bug.package or '?' }}</code></div>{% endfor %}</td>
-      <td class="nowrap">{% for group in release_groups(bug) %}<div>{% for c in group.chips %}<span class="rel {{ c.cls }}" title="{{ c.title }}">{{ c.letter }}</span>{% else %}<span class="muted">&ndash;</span>{% endfor %}</div>{% else %}<div><span class="muted">&ndash;</span></div>{% endfor %}</td>
-      <td>
-        {% set mi = main_issue(bug) %}{% if mi %}{{ mi.text }}{% if mi.more %} <span class="more">(+{{ mi.more }} more)</span>{% endif %}{% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
-
-  <h2>Details</h2>
   <div class="toolbar"><button id="expand">Expand all</button><button id="collapse">Collapse all</button></div>
-  {% for bug in todo %}
+  <div class="row-grid list-head"><span></span><span>Status</span><span>Launchpad bug</span><span>Package</span><span>Releases</span><span>Main issue</span></div>
+  {% for bug in bugs %}
   <details class="card lvl {{ bug.level }}" id="bug-{{ bug.bug_id }}" data-level="{{ bug.level }}">
-    <summary>
-      <span class="badge lvl {{ bug.level }}">{{ labels[bug.level] }}</span>
-      <strong>{{ link(bug.url, bug.label) }}</strong>
-      <code>{{ bug.package or '?' }}</code>
-      <span>{{ bug.title }}</span>
+    <summary class="row-grid">
+      <span><span class="badge lvl {{ bug.level }}">{{ labels[bug.level] }}</span></span>
+      <span><strong class="nowrap">{{ link(bug.url, bug.label) }}</strong> {{ bug.short_title(70) }}</span>
+      <span class="nowrap">{% for group in release_groups(bug) %}<span class="line"><code>{{ group.package }}</code></span>{% else %}<span class="line"><code>{{ bug.package or '?' }}</code></span>{% endfor %}</span>
+      <span class="nowrap">{% for group in release_groups(bug) %}<span class="line">{% for c in group.chips %}<span class="rel {{ c.cls }}" title="{{ c.title }}">{{ c.letter }}</span>{% else %}<span class="muted">&ndash;</span>{% endfor %}</span>{% else %}<span class="line"><span class="muted">&ndash;</span></span>{% endfor %}</span>
+      <span>{% set mi = main_issue(bug) %}{% if mi %}{{ mi.text }}{% if mi.more %} <span class="more">(+{{ mi.more }} more)</span>{% endif %}{% endif %}</span>
     </summary>
     <div class="body bug">
+        {% if bug.title|length > 70 %}<p>{{ bug.title }}</p>{% endif %}
         {% if bug.error %}<p class="sev-error">{{ bug.error }}</p>{% endif %}
 
         <h4>Issues</h4>
@@ -233,13 +224,6 @@
   {% endfor %}
   {% endif %}
 
-  {% if finished %}
-  <h2 data-level="done" class="doneh">Done ({{ finished|length }})</h2>
-  <ul class="done-list" data-level="done">
-    {% for bug in finished %}<li>{{ link(bug.url, bug.label) }} <code>{{ bug.package or '?' }}</code> {{ bug.short_title(50) }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
 </main>
 
 <script>
