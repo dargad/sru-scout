@@ -1,0 +1,155 @@
+[
+  {
+    "key": "LP#2169912",
+    "url": "https://bugs.launchpad.net/bugs/2169912",
+    "summary": "gnome-shell crashed with SIGSEGV in meta_compositor_sync_stack() - please backport mutter fix 24e6843a (46.3) to noble",
+    "status": "",
+    "assignee": "",
+    "bugs": [
+      {
+        "bug_id": 2169912,
+        "url": "https://bugs.launchpad.net/bugs/2169912",
+        "title": "gnome-shell crashed with SIGSEGV in meta_compositor_sync_stack() - please backport mutter fix 24e6843a (46.3) to noble",
+        "package": "mutter",
+        "accessible": true,
+        "error": "",
+        "tags": [
+          "desktop-needs-sru",
+          "fixed-in-mutter-46.3",
+          "fixed-upstream",
+          "noble"
+        ],
+        "has_sru_template": true,
+        "series": [
+          {
+            "series": "devel",
+            "status": "Fix Released",
+            "importance": "Undecided",
+            "assignee": "",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/mutter/+bug/2169912",
+            "eol": false,
+            "codename": "tenacious",
+            "version": "27.04",
+            "package": "mutter"
+          },
+          {
+            "series": "noble",
+            "status": "In Progress",
+            "importance": "Medium",
+            "assignee": "dmarx11",
+            "url": "https://bugs.launchpad.net/ubuntu/noble/+source/mutter/+bug/2169912",
+            "eol": false,
+            "codename": "noble",
+            "version": "24.04",
+            "package": "mutter"
+          }
+        ],
+        "pending": [],
+        "queued": [],
+        "excuses": [
+          {
+            "series": "noble",
+            "package": "mutter",
+            "old_version": "46.2-1ubuntu0.24.04.18",
+            "new_version": "46.2-1ubuntu0.24.04.19",
+            "url": "https://ubuntu-archive-team.ubuntu.com/proposed-migration/noble/update_excuses.html#mutter",
+            "status": "BLOCKED: Needs an approval (either due to a freeze, the source suite or a manual hint)",
+            "issues": [],
+            "info": [],
+            "regressions": [],
+            "tests_running": 0,
+            "block_bugs": [],
+            "days": 0
+          }
+        ],
+        "patches": [],
+        "merge_proposals": [
+          {
+            "web_url": "https://code.launchpad.net/~dmarx11/ubuntu/+source/mutter/+git/mutter/+merge/514612",
+            "status": "Needs review",
+            "source": "refs/heads/lp2169912-noble",
+            "target": "refs/heads/ubuntu/noble-devel",
+            "series": "noble",
+            "diff_url": "https://code.launchpad.net/~dmarx11/ubuntu/+source/mutter/+git/mutter/+merge/514612/+preview-diff/1148219/+files/preview.diff",
+            "votes": [],
+            "comments": [],
+            "lint": {
+              "url": "https://code.launchpad.net/~dmarx11/ubuntu/+source/mutter/+git/mutter/+merge/514612/+preview-diff/1148219/+files/preview.diff",
+              "ran": true,
+              "error": "",
+              "findings": [
+                {
+                  "rule_id": "PUBHIST001",
+                  "severity": "error",
+                  "message": "Version '46.2-1ubuntu0.24.04.19' of 'mutter' is already published in: noble/Proposed/Published",
+                  "path": "debian/changelog",
+                  "line": 1,
+                  "doc_url": "https://launchpad.net/ubuntu/+source/mutter/+publishinghistory"
+                }
+              ]
+            }
+          }
+        ],
+        "blockers": [
+          {
+            "severity": "concern",
+            "summary": "The reproducer forces the XReparentWindow BadMatch failure artificially with ParentRelative depth-24 windows. Nothing shows this is the failure that happens in the field, such as after an idle screen lock. The field reporters' crashes may therefore not be fully covered by the fix, and verification by the reporters (for example comment 6's Xorg user) would give better evidence.",
+            "source": "llm",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/mutter/+bug/2169912/comments/6",
+            "maybe_resolved": false
+          },
+          {
+            "severity": "concern",
+            "summary": "The test plan only runs a Wayland/Xwayland GDM session (WaylandEnable=true) and never exercises an Xorg session. At least one reporter is on Xorg. The earlier X-error handling from 24e6843a is also not exercised by the reproducer, so only the PPA build has been tested, not a package from -proposed.",
+            "source": "llm",
+            "url": "https://bugs.launchpad.net/bugs/2169912",
+            "maybe_resolved": false
+          },
+          {
+            "severity": "concern",
+            "summary": "The testing noted that mutter-x11-frames asks mutter to map the same rejected frame three times. This possible retry or stray-frame behaviour is listed only as a risk and is not shown to be harmless.",
+            "source": "llm",
+            "url": "https://bugs.launchpad.net/bugs/2169912",
+            "maybe_resolved": false
+          }
+        ],
+        "attention_reasons": [
+          "sru-lint: 1 error(s) in merge proposal 514612 (ubuntu/noble-devel)",
+          "The reproducer forces the XReparentWindow BadMatch failure artificially with ParentRelative depth-24 windows. Nothing shows this is the failure that happens in the field, such as after an idle screen lock. The field reporters' crashes may therefore not be fully covered by the fix, and verification by the reporters (for example comment 6's Xorg user) would give better evidence.",
+          "The test plan only runs a Wayland/Xwayland GDM session (WaylandEnable=true) and never exercises an Xorg session. At least one reporter is on Xorg. The earlier X-error handling from 24e6843a is also not exercised by the reproducer, so only the PPA build has been tested, not a package from -proposed.",
+          "The testing noted that mutter-x11-frames asks mutter to map the same rejected frame three times. This possible retry or stray-frame behaviour is listed only as a risk and is not shown to be harmless."
+        ],
+        "findings": [
+          {
+            "level": "engineer-attention",
+            "text": "sru-lint: 1 error(s) in merge proposal 514612 (ubuntu/noble-devel)",
+            "url": "https://code.launchpad.net/~dmarx11/ubuntu/+source/mutter/+git/mutter/+merge/514612"
+          },
+          {
+            "level": "engineer-attention",
+            "text": "The reproducer forces the XReparentWindow BadMatch failure artificially with ParentRelative depth-24 windows. Nothing shows this is the failure that happens in the field, such as after an idle screen lock. The field reporters' crashes may therefore not be fully covered by the fix, and verification by the reporters (for example comment 6's Xorg user) would give better evidence.",
+            "url": "https://bugs.launchpad.net/ubuntu/+source/mutter/+bug/2169912/comments/6"
+          },
+          {
+            "level": "engineer-attention",
+            "text": "The test plan only runs a Wayland/Xwayland GDM session (WaylandEnable=true) and never exercises an Xorg session. At least one reporter is on Xorg. The earlier X-error handling from 24e6843a is also not exercised by the reproducer, so only the PPA build has been tested, not a package from -proposed.",
+            "url": "https://bugs.launchpad.net/bugs/2169912"
+          },
+          {
+            "level": "engineer-attention",
+            "text": "The testing noted that mutter-x11-frames asks mutter to map the same rejected frame three times. This possible retry or stray-frame behaviour is listed only as a risk and is not shown to be harmless.",
+            "url": "https://bugs.launchpad.net/bugs/2169912"
+          }
+        ],
+        "level": "engineer-attention"
+      }
+    ],
+    "reasons": [
+      "LP: #2169912 (mutter): sru-lint: 1 error(s) in merge proposal 514612 (ubuntu/noble-devel)",
+      "LP: #2169912 (mutter): The reproducer forces the XReparentWindow BadMatch failure artificially with ParentRelative depth-24 windows. Nothing shows this is the failure that happens in the field, such as after an idle screen lock. The field reporters' crashes may therefore not be fully covered by the fix, and verification by the reporters (for example comment 6's Xorg user) would give better evidence.",
+      "LP: #2169912 (mutter): The test plan only runs a Wayland/Xwayland GDM session (WaylandEnable=true) and never exercises an Xorg session. At least one reporter is on Xorg. The earlier X-error handling from 24e6843a is also not exercised by the reproducer, so only the PPA build has been tested, not a package from -proposed.",
+      "LP: #2169912 (mutter): The testing noted that mutter-x11-frames asks mutter to map the same rejected frame three times. This possible retry or stray-frame behaviour is listed only as a risk and is not shown to be harmless."
+    ],
+    "level": "engineer-attention"
+  }
+]
