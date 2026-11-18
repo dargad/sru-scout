@@ -249,16 +249,22 @@ def test_release_chips_collapse_devel_alias_per_component():
         SeriesStatus("devel", "In Progress", codename="tenacious", version="27.04", package="qemu"),
         SeriesStatus("tenacious", "Fix Committed", codename="tenacious", version="27.04", package="qemu"),
         SeriesStatus("devel", "In Progress", codename="tenacious", version="27.04", package="qemu-hwe"),
-        SeriesStatus("tenacious", "Fix Committed", codename="tenacious", version="27.04", package="qemu-hwe"),
+        SeriesStatus("tenacious", "Fix Released", codename="tenacious", version="27.04", package="qemu-hwe"),
     ])
 
     groups = release_groups(b)
     assert [group["package"] for group in groups] == ["qemu", "qemu-hwe"]
     assert [[c["letter"] for c in group["chips"]] for group in groups] == [["T"], ["T"]]
-    assert [[c["cls"] for c in group["chips"]] for group in groups] == [["committed"], ["committed"]]
+    assert [[c["cls"] for c in group["chips"]] for group in groups] == [["committed"], ["released"]]
 
     issue = IssueReview("SI-3", "u", "Multi-component fix", bugs=[b])
     classify_issue(issue)
     html = render_html([issue])
-    assert '<span class="line"><code>qemu</code></span><span class="line"><code>qemu-hwe</code></span></span>' in html
-    assert html.count('title="tenacious 27.04: Fix Committed">T</span></span>') == 2
+    summary = html.split('<summary class="row-grid">', 1)[1].split("</summary>", 1)[0]
+    assert (
+        '<span class="package-releases"> '
+        '<span><code>qemu</code></span> '
+        '<span class="release-chips"><span class="rel committed" title="tenacious 27.04: Fix Committed">T</span></span> '
+        '<span><code>qemu-hwe</code></span> '
+        '<span class="release-chips"><span class="rel released" title="tenacious 27.04: Fix Released">T</span></span>'
+    ) in " ".join(summary.split())

@@ -46,9 +46,9 @@
   td { border-bottom: 1px solid var(--border); padding: .45rem .6rem; vertical-align: top; overflow-wrap: anywhere; }
   .nowrap { white-space: nowrap; overflow-wrap: normal; }
   .more { color: var(--muted); font-size: .85rem; }
-  .line { display: block; }
-
-  .row-grid { display: grid; grid-template-columns: 1rem 6.4rem minmax(14rem, 2fr) minmax(7rem, max-content) minmax(5rem, max-content) 3fr; column-gap: .8rem; align-items: start; }
+  .row-grid { display: grid; grid-template-columns: 1rem 6.4rem minmax(0, 2fr) min(19%, 11rem) min(17%, 9rem) minmax(0, 3fr); column-gap: .8rem; align-items: start; }
+  .package-releases { display: grid; grid-column: 4 / span 2; grid-template-columns: subgrid; align-items: start; }
+  .release-chips { display: flex; flex-wrap: wrap; row-gap: .2rem; }
   .list-head { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 2px solid var(--border); padding: .35rem .6rem .35rem calc(.6rem + 4px); }
   details.card { border-bottom: 1px solid var(--border); border-left: 4px solid var(--c); }
   details.card > summary { padding: .45rem .6rem; cursor: pointer; list-style: none; overflow-wrap: anywhere; }
@@ -98,8 +98,9 @@
   [hidden] { display: none !important; }
   @media (max-width: 700px) {
     .list-head { display: none; }
-    .row-grid { grid-template-columns: 1rem 1fr; row-gap: .2rem; }
+    .row-grid { grid-template-columns: 1rem minmax(0, 1fr); row-gap: .2rem; }
     .row-grid > :nth-child(n+2) { grid-column: 2; }
+    .package-releases { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .2rem .8rem; }
   }
 </style>
 </head>
@@ -134,8 +135,15 @@
     <summary class="row-grid">
       <span><span class="badge lvl {{ bug.level }}">{{ labels[bug.level] }}</span></span>
       <span><strong class="nowrap">{{ link(bug.url, bug.label) }}</strong> {{ bug.short_title(70) }}</span>
-      <span class="nowrap">{% for group in release_groups(bug) %}<span class="line"><code>{{ group.package }}</code></span>{% else %}<span class="line"><code>{{ bug.package or '?' }}</code></span>{% endfor %}</span>
-      <span class="nowrap">{% for group in release_groups(bug) %}<span class="line">{% for c in group.chips %}<span class="rel {{ c.cls }}" title="{{ c.title }}">{{ c.letter }}</span>{% else %}<span class="muted">&ndash;</span>{% endfor %}</span>{% else %}<span class="line"><span class="muted">&ndash;</span></span>{% endfor %}</span>
+      <span class="package-releases">
+        {% for group in release_groups(bug) %}
+        <span><code>{{ group.package }}</code></span>
+        <span class="release-chips">{% for c in group.chips %}<span class="rel {{ c.cls }}" title="{{ c.title }}">{{ c.letter }}</span>{% else %}<span class="muted">&ndash;</span>{% endfor %}</span>
+        {% else %}
+        <span><code>{{ bug.package or '?' }}</code></span>
+        <span class="release-chips"><span class="muted">&ndash;</span></span>
+        {% endfor %}
+      </span>
       <span>{% set mi = main_issue(bug) %}{% if mi %}{{ mi.text }}{% if mi.more %} <span class="more">(+{{ mi.more }} more)</span>{% endif %}{% endif %}</span>
     </summary>
     <div class="body bug">

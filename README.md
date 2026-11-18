@@ -9,7 +9,7 @@ For every card it:
 3. For the remaining series it collects attached patches and linked merge proposals and runs `sru-lint check <url>` on each (patch attachment data, or the merge proposal preview diff).
 4. For releases where the package may sit in -proposed, reads its entry on the proposed-migration excuses page (`https://ubuntu-archive-team.ubuntu.com/proposed-migration/<release>/update_excuses.html#<package>`): autopkgtest regressions, missing builds, uninstallable/impossible dependencies and migration block requests. Disable with `--no-excuses`.
 5. Scans bug tags, bug comments, merge proposal comments, votes and status for blockers (rule based; optionally an LLM pass).
-6. Classifies each bug (and card) as `blocked`, `engineer-attention`, `sponsor-attention`, `review`, `ready` or `done` and renders a CLI and/or HTML report. The HTML report is keyed by Launchpad bug number and lists each bug once; it contains no Jira references.
+6. Classifies each bug (and card) as `blocked`, `engineer-attention`, `sponsor-attention`, `review`, `ready` or `done` and renders a CLI and/or HTML report. The HTML report is keyed by Launchpad bug number and lists each bug once; it contains no Jira references. Its overview keeps columns aligned and lets long package names and release badges wrap without separating a package from its releases.
 
 ## Setup
 
